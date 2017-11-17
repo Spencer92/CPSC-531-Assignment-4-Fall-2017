@@ -1,0 +1,10 @@
+package states;
+
+public enum PersonStates 
+{
+	WAITING_TO_WORK,
+	WAITING_IN_ELEVATOR_TO_START_WORK,
+	WORKING,
+	WAITING_TO_LEAVE,
+	WAITING_IN_ELEVATOR_TO_LEAVE
+}
