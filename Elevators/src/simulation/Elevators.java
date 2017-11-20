@@ -33,6 +33,8 @@ public class Elevators {
 	private boolean debug = true;
 	private int personNumber;
 	private int elevatorNumber;
+	private int next;
+	private int eventAfterNext;
 	
 	public Elevators(String [] args)
 	{
@@ -50,10 +52,15 @@ public class Elevators {
 	{
 		LinkedList<Person> people = new LinkedList<Person>();
 		LinkedList<Integer> floorRequests = new LinkedList<Integer>();
+		LinkedList<Person> tempPeopleList = new LinkedList<Person>();
+		LinkedList<Elevator> tempElevatorList = new LinkedList<Elevator>();
 		Elevator [] elevator = new Elevator[numElevators];
-		Integer next = null;
-		NextEventStates nextEvent;
+//		Integer next = null;
+//		Integer afterNext = null;
+		NextEventStates nextEventState;
+		NextEventStates afterNextEventState;
 		Scanner scanner = new Scanner(System.in);
+		double timeJump = 0;
 		
 		for(int i = 0; i < elevator.length; i++)
 		{
@@ -76,25 +83,77 @@ public class Elevators {
 				scanner.nextLine();
 			}
 			
-			nextEvent = nextEvent(people,elevator,next);
+			nextEventState = nextEvent(people,elevator,timeStamp);
 			
 			if(debug)
 			{
-				System.out.println("The next thing that will happen is " + nextEvent);
+				System.out.println("The next thing that will happen is " + nextEventState);
 				scanner = new Scanner(System.in);
 				scanner.nextLine();
 			}
 			
 			
-			if(nextEvent == NextEventStates.PERSON_ARRIVAL)
+			if(nextEventState == NextEventStates.PERSON_ARRIVAL)
+			{
+				tempPeopleList = new LinkedList<Person>();
+				for(int j = 0; j < people.size(); j++)
+				{
+					if(j != next)
+					{
+						tempPeopleList.add(people.get(j));
+					}
+				}
+				afterNextEventState = eventAfterNext(tempPeopleList,elevator);
+				if(afterNextEventState == NextEventStates.PERSON_ARRIVAL)
+				{
+					
+					timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
+					timeStamp += timeJump;
+	/*				for(Person person : people)
+					{
+						person.setArrivalTime(person.getArrivalTime()-timeJump);
+					}
+					for(int j = 0; j < elevator.length; j++)
+					{
+						elevator[j].setFloorProgress(elevator[j].getFloorProgress()-timeJump);
+					}
+					tempPeopleList = null;
+					tempElevatorList = null;*/
+				}
+				else if(afterNextEventState == NextEventStates.PERSON_DEPARTURE)
+				{
+					timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getWorkTime();
+	/*				for(Person person : people)
+					{
+						person.setArrivalTime(person.getArrivalTime()-timeJump);
+					}
+					for(int j = 0; j < elevator.length; j++)
+					{
+						elevator[j].setFloorProgress(elevator[j].getFloorProgress()-timeJump);
+					}
+					tempPeopleList = null;
+					tempElevatorList = null;*/
+				}
+				else if(afterNextEventState == NextEventStates.ELEVATOR_DEPARTURE)
+				{
+					timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
+					for(Person person : people)
+					{
+						person.setArrivalTime(person.getArrivalTime()-timeJump);
+					}
+					for(int j = 0; j < elevator.length; j++)
+					{
+						elevator[j].setFloorProgress(elevator[j].getFloorProgress()-timeJump);
+					}
+					tempPeopleList = null;
+					tempElevatorList = null;
+				}
+			}
+			else if(nextEventState == NextEventStates.PERSON_DEPARTURE)
 			{
 				
 			}
-			else if(nextEvent == NextEventStates.PERSON_DEPARTURE)
-			{
-				
-			}
-			else if(nextEvent == NextEventStates.PERSON_DEPARTURE)
+			else if(nextEventState == NextEventStates.ELEVATOR_DEPARTURE)
 			{
 				
 			}
@@ -115,7 +174,67 @@ public class Elevators {
 		
 	}
 	
-	public NextEventStates nextEvent(LinkedList<Person> people, Elevator[] elevator, Integer next)
+	public NextEventStates nextEvent(LinkedList<Person> people, Elevator[] elevator, double base)
+	{
+		NextEventStates lowest = null;
+		int nextArrivalEvent = people.size()-1;
+		int nextDepartureEvent = people.size()-1;
+		int nextElevatorEvent = elevator.length-1;
+		
+		
+		for(int i = 0; i < people.size()-1; i++)
+		{
+			if(people.get(nextArrivalEvent).getArrivalTime() > base && people.get(nextArrivalEvent).getArrivalTime() > people.get(i).getArrivalTime())
+			{
+				nextArrivalEvent = i;
+			}
+		}
+		
+		for(int i = 0; i < people.size()-1; i++)
+		{
+			if(people.get(nextDepartureEvent).getWorkTime() > base && people.get(nextDepartureEvent).getWorkTime() > people.get(i).getWorkTime())
+			{
+				nextDepartureEvent = i;
+			}
+		}
+		
+		for(int i = 0; i < elevator.length-1; i++)
+		{
+			if(elevator[nextElevatorEvent].getFloorProgress() < elevator[i].getFloorProgress())
+			{
+				nextElevatorEvent = i;
+			}
+		}
+	//You left here to update the base	
+		if(people.get(nextArrivalEvent).getArrivalTime() < people.get(nextDepartureEvent).getWorkTime() && people.get(nextArrivalEvent).getArrivalTime() < elevator[nextElevatorEvent].getFloorProgress())
+		{
+			lowest = NextEventStates.PERSON_ARRIVAL;
+			next = nextArrivalEvent;
+		}
+		else if(people.get(nextDepartureEvent).getWorkTime() < people.get(nextArrivalEvent).getArrivalTime() && people.get(nextDepartureEvent).getWorkTime() < elevator[nextElevatorEvent].getFloorProgress())
+		{
+			lowest = NextEventStates.PERSON_DEPARTURE;
+			next = nextDepartureEvent;
+		}
+		else if(elevator[nextElevatorEvent].getFloorProgress() < people.get(nextArrivalEvent).getArrivalTime() && elevator[nextElevatorEvent].getFloorProgress() < people.get(nextDepartureEvent).getWorkTime())
+		{
+			lowest = NextEventStates.ELEVATOR_DEPARTURE;
+			next = nextElevatorEvent;
+		}
+		else
+		{
+			try {
+				throw new Exception("Everything is identical??");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return lowest;
+	}
+	
+	public NextEventStates eventAfterNext(LinkedList<Person> people, Elevator[] elevator)
 	{
 		NextEventStates lowest = null;
 		int nextArrivalEvent = people.size()-1;
@@ -150,17 +269,17 @@ public class Elevators {
 		if(people.get(nextArrivalEvent).getArrivalTime() < people.get(nextDepartureEvent).getWorkTime() && people.get(nextArrivalEvent).getArrivalTime() < elevator[nextElevatorEvent].getFloorProgress())
 		{
 			lowest = NextEventStates.PERSON_ARRIVAL;
-			next = nextArrivalEvent;
+			eventAfterNext = nextArrivalEvent;
 		}
 		else if(people.get(nextDepartureEvent).getWorkTime() < people.get(nextArrivalEvent).getArrivalTime() && people.get(nextDepartureEvent).getWorkTime() < elevator[nextElevatorEvent].getFloorProgress())
 		{
 			lowest = NextEventStates.PERSON_DEPARTURE;
-			next = nextDepartureEvent;
+			eventAfterNext = nextDepartureEvent;
 		}
 		else if(elevator[nextElevatorEvent].getFloorProgress() < people.get(nextArrivalEvent).getArrivalTime() && elevator[nextElevatorEvent].getFloorProgress() < people.get(nextDepartureEvent).getWorkTime())
 		{
 			lowest = NextEventStates.ELEVATOR_DEPARTURE;
-			next = nextElevatorEvent;
+			eventAfterNext = nextElevatorEvent;
 		}
 		else
 		{
