@@ -106,7 +106,7 @@ public class Elevators {
 				afterNextEventState = eventAfterNext(tempPeopleList,elevator);
 				if(afterNextEventState == NextEventStates.PERSON_ARRIVAL)
 				{
-					
+					timeJump = timeJump(afterNextEventState,eventAfterNext,tempPeopleList,next);
 					timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
 					timeStamp += timeJump;
 	/*				for(Person person : people)
@@ -122,7 +122,11 @@ public class Elevators {
 				}
 				else if(afterNextEventState == NextEventStates.PERSON_DEPARTURE)
 				{
+					
+					timeJump = timeJump(afterNextEventState,eventAfterNext,tempPeopleList,next);
+					
 					timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getWorkTime();
+					timeStamp += timeJump;
 	/*				for(Person person : people)
 					{
 						person.setArrivalTime(person.getArrivalTime()-timeJump);
@@ -137,7 +141,9 @@ public class Elevators {
 				else if(afterNextEventState == NextEventStates.ELEVATOR_DEPARTURE)
 				{
 					timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
-					for(Person person : people)
+					timeStamp += timeJump;
+					
+					/*					for(Person person : people)
 					{
 						person.setArrivalTime(person.getArrivalTime()-timeJump);
 					}
@@ -146,7 +152,7 @@ public class Elevators {
 						elevator[j].setFloorProgress(elevator[j].getFloorProgress()-timeJump);
 					}
 					tempPeopleList = null;
-					tempElevatorList = null;
+					tempElevatorList = null;*/
 				}
 			}
 			else if(nextEventState == NextEventStates.PERSON_DEPARTURE)
@@ -173,6 +179,44 @@ public class Elevators {
 		
 		
 	}
+	
+	public double timeJump(NextEventStates eventAfterNextt, int entityAfterNext, LinkedList<Person> tempPeopleList, int next)
+	{
+		if(eventAfterNextt == NextEventStates.PERSON_ARRIVAL)
+		{
+			return tempPeopleList.get(entityAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
+		}
+		else if(eventAfterNextt == NextEventStates.PERSON_DEPARTURE)
+		{
+			return tempPeopleList.get(entityAfterNext).getArrivalTime() - tempPeopleList.get(next).getWorkTime();
+		}
+		else if(eventAfterNextt == NextEventStates.ELEVATOR_DEPARTURE)
+		{
+			return tempPeopleList.get(entityAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
+		}
+		return 0;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	public NextEventStates nextEvent(LinkedList<Person> people, Elevator[] elevator, double base)
 	{
