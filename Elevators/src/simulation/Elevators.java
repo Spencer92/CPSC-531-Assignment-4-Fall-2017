@@ -71,7 +71,18 @@ public class Elevators {
 			availableElevator = allBusyElevators(elevators);
 			if(availableElevator != -1)
 			{
-				
+				for(Person person : people)
+				{
+					if(!((person.getState().compareTo(PersonStates.WAITING_TO_WORK) == 0
+							||	
+							person.getState().compareTo(PersonStates.WAITING_TO_LEAVE) == 0)
+							&&
+							person.getCurrentFloor() == elevators.get(availableElevator).getFloorOn()))
+					{
+								
+					}
+						
+				}
 			}
 			
 			
@@ -86,13 +97,13 @@ public class Elevators {
 	
 	private int allBusyElevators(LinkedList<Elevator> elevators)
 	{
-		int elevatorsBusy = 0;
+//		int elevatorsBusy = 0;
 		int specificElevator = -1;
 		for(int i = 0; i < elevators.size(); i++)
 		{
 			if(elevators.get(i).getState().compareTo(ElevatorStates.IDLE) == 0)
 			{
-				elevatorsBusy++;
+//				elevatorsBusy++;
 				specificElevator = i;
 				break;
 			}

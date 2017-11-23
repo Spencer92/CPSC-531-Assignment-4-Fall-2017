@@ -12,6 +12,7 @@ public class Person
 	private Elevators elevator;
 	private int name;
 	private int currentFloor = 0;
+	private double delay = 0;
 	
 	public Person(Elevators elevator)
 	{
@@ -20,6 +21,26 @@ public class Person
 		this.arrivalTime = elevator.getFloor();
 		this.workTime = elevator.getWork();
 		this.name = elevator.getPersonName();
+	}
+	
+	public int getCurrentFloor()
+	{
+		return currentFloor;
+	}
+	
+	public void setCurrentFloor(int currentFloor)
+	{
+		this.currentFloor = currentFloor;
+	}
+	
+	public double getDelay()
+	{
+		return delay;
+	}
+	
+	public void setDelay(double delay)
+	{
+		this.delay = delay;
 	}
 	
 	public int getTime()
