@@ -53,7 +53,7 @@ public class Elevators {
 		LinkedList<Person> people = new LinkedList<Person>();
 		LinkedList<Integer> floorRequests = new LinkedList<Integer>();
 		LinkedList<Person> tempPeopleList = new LinkedList<Person>();
-		LinkedList<Elevator> tempElevatorList = new LinkedList<Elevator>();
+		Elevator [] tempElevatorList = new Elevator[numElevators];
 		Elevator [] elevator = new Elevator[numElevators];
 //		Integer next = null;
 //		Integer afterNext = null;
@@ -106,7 +106,7 @@ public class Elevators {
 				afterNextEventState = eventAfterNext(tempPeopleList,elevator);
 				if(afterNextEventState == NextEventStates.PERSON_ARRIVAL)
 				{
-					timeJump = timeJump(afterNextEventState,eventAfterNext,tempPeopleList,next);
+					timeJump = timeJumpPerson(afterNextEventState,eventAfterNext,tempPeopleList,next);
 					timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
 					timeStamp += timeJump;
 	/*				for(Person person : people)
@@ -123,9 +123,9 @@ public class Elevators {
 				else if(afterNextEventState == NextEventStates.PERSON_DEPARTURE)
 				{
 					
-					timeJump = timeJump(afterNextEventState,eventAfterNext,tempPeopleList,next);
+					timeJump = timeJumpPerson(afterNextEventState,eventAfterNext,tempPeopleList,next);
 					
-					timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getWorkTime();
+	//				timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getWorkTime();
 					timeStamp += timeJump;
 	/*				for(Person person : people)
 					{
@@ -140,7 +140,14 @@ public class Elevators {
 				}
 				else if(afterNextEventState == NextEventStates.ELEVATOR_DEPARTURE)
 				{
-					timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
+	//				timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
+					for(int j = 0; j < elevator.length; j++)
+					{
+						tempElevatorList[j] = elevator[j];
+					}
+					
+					timeJump = tempElevatorList[eventAfterNext].getFloorProgress() - tempPeopleList.get(next).getWorkTime();
+					
 					timeStamp += timeJump;
 					
 					/*					for(Person person : people)
@@ -180,20 +187,18 @@ public class Elevators {
 		
 	}
 	
-	public double timeJump(NextEventStates eventAfterNextt, int entityAfterNext, LinkedList<Person> tempPeopleList, int next)
+	public double timeJumpPerson(NextEventStates eventAfterNext, int entityAfterNext, LinkedList<Person> tempPeopleList, int next)
 	{
-		if(eventAfterNextt == NextEventStates.PERSON_ARRIVAL)
+		
+		if(eventAfterNext == NextEventStates.PERSON_ARRIVAL)
 		{
 			return tempPeopleList.get(entityAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
 		}
-		else if(eventAfterNextt == NextEventStates.PERSON_DEPARTURE)
+		else if(eventAfterNext == NextEventStates.PERSON_DEPARTURE)
 		{
 			return tempPeopleList.get(entityAfterNext).getArrivalTime() - tempPeopleList.get(next).getWorkTime();
 		}
-		else if(eventAfterNextt == NextEventStates.ELEVATOR_DEPARTURE)
-		{
-			return tempPeopleList.get(entityAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
-		}
+
 		return 0;
 	}
 	
