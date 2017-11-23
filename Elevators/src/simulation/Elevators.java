@@ -53,7 +53,7 @@ public class Elevators {
 		LinkedList<Person> people = new LinkedList<Person>();
 		LinkedList<Integer> floorRequests = new LinkedList<Integer>();
 		LinkedList<Person> tempPeopleList = new LinkedList<Person>();
-		Elevator [] tempElevatorList = new Elevator[numElevators];
+		LinkedList<Elevator> tempElevators = new LinkedList<Elevator>();
 		Elevator [] elevator = new Elevator[numElevators];
 //		Integer next = null;
 //		Integer afterNext = null;
@@ -143,10 +143,10 @@ public class Elevators {
 	//				timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
 					for(int j = 0; j < elevator.length; j++)
 					{
-						tempElevatorList[j] = elevator[j];
+						tempElevators.add(elevator[j]);
 					}
 					
-					timeJump = tempElevatorList[eventAfterNext].getFloorProgress() - tempPeopleList.get(next).getWorkTime();
+					timeJump = tempElevators.get(eventAfterNext).getFloorProgress() - tempPeopleList.get(next).getWorkTime();
 					
 					timeStamp += timeJump;
 					
@@ -164,11 +164,141 @@ public class Elevators {
 			}
 			else if(nextEventState == NextEventStates.PERSON_DEPARTURE)
 			{
-				
+				tempPeopleList = new LinkedList<Person>();
+				for(int j = 0; j < people.size(); j++)
+				{
+					if(j != next)
+					{
+						tempPeopleList.add(people.get(j));
+					}
+				}
+				afterNextEventState = eventAfterNext(tempPeopleList,elevator);
+				if(afterNextEventState == NextEventStates.PERSON_ARRIVAL)
+				{
+					timeJump = timeJumpPerson(afterNextEventState,eventAfterNext,tempPeopleList,next);
+					timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
+					timeStamp += timeJump;
+	/*				for(Person person : people)
+					{
+						person.setArrivalTime(person.getArrivalTime()-timeJump);
+					}
+					for(int j = 0; j < elevator.length; j++)
+					{
+						elevator[j].setFloorProgress(elevator[j].getFloorProgress()-timeJump);
+					}
+					tempPeopleList = null;
+					tempElevatorList = null;*/
+				}
+				else if(afterNextEventState == NextEventStates.PERSON_DEPARTURE)
+				{
+					
+					timeJump = timeJumpPerson(afterNextEventState,eventAfterNext,tempPeopleList,next);
+					
+	//				timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getWorkTime();
+					timeStamp += timeJump;
+	/*				for(Person person : people)
+					{
+						person.setArrivalTime(person.getArrivalTime()-timeJump);
+					}
+					for(int j = 0; j < elevator.length; j++)
+					{
+						elevator[j].setFloorProgress(elevator[j].getFloorProgress()-timeJump);
+					}
+					tempPeopleList = null;
+					tempElevatorList = null;*/
+				}
+				else if(afterNextEventState == NextEventStates.ELEVATOR_DEPARTURE)
+				{
+	//				timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
+					for(int j = 0; j < elevator.length; j++)
+					{
+						tempElevators.add(elevator[j]);
+					}
+					
+					timeJump = tempElevators.get(eventAfterNext).getFloorProgress() - tempPeopleList.get(next).getWorkTime();
+					
+					timeStamp += timeJump;
+					
+					/*					for(Person person : people)
+					{
+						person.setArrivalTime(person.getArrivalTime()-timeJump);
+					}
+					for(int j = 0; j < elevator.length; j++)
+					{
+						elevator[j].setFloorProgress(elevator[j].getFloorProgress()-timeJump);
+					}
+					tempPeopleList = null;
+					tempElevatorList = null;*/
+				}
 			}
 			else if(nextEventState == NextEventStates.ELEVATOR_DEPARTURE)
 			{
-				
+				tempPeopleList = new LinkedList<Person>();
+				for(int j = 0; j < people.size(); j++)
+				{
+					if(j != next)
+					{
+						tempPeopleList.add(people.get(j));
+					}
+				}
+				afterNextEventState = eventAfterNext(tempPeopleList,elevator);
+				if(afterNextEventState == NextEventStates.PERSON_ARRIVAL)
+				{
+					timeJump = timeJumpPerson(afterNextEventState,eventAfterNext,tempPeopleList,next);
+					timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
+					timeStamp += timeJump;
+	/*				for(Person person : people)
+					{
+						person.setArrivalTime(person.getArrivalTime()-timeJump);
+					}
+					for(int j = 0; j < elevator.length; j++)
+					{
+						elevator[j].setFloorProgress(elevator[j].getFloorProgress()-timeJump);
+					}
+					tempPeopleList = null;
+					tempElevatorList = null;*/
+				}
+				else if(afterNextEventState == NextEventStates.PERSON_DEPARTURE)
+				{
+					
+					timeJump = timeJumpPerson(afterNextEventState,eventAfterNext,tempPeopleList,next);
+					
+	//				timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getWorkTime();
+					timeStamp += timeJump;
+	/*				for(Person person : people)
+					{
+						person.setArrivalTime(person.getArrivalTime()-timeJump);
+					}
+					for(int j = 0; j < elevator.length; j++)
+					{
+						elevator[j].setFloorProgress(elevator[j].getFloorProgress()-timeJump);
+					}
+					tempPeopleList = null;
+					tempElevatorList = null;*/
+				}
+				else if(afterNextEventState == NextEventStates.ELEVATOR_DEPARTURE)
+				{
+	//				timeJump = tempPeopleList.get(eventAfterNext).getArrivalTime() - tempPeopleList.get(next).getArrivalTime();
+					for(int j = 0; j < elevator.length; j++)
+					{
+						tempElevators.add(elevator[j]);
+					}
+					
+					timeJump = tempElevators.get(eventAfterNext).getFloorProgress() - tempPeopleList.get(next).getWorkTime();
+					
+					timeStamp += timeJump;
+					
+					/*					for(Person person : people)
+					{
+						person.setArrivalTime(person.getArrivalTime()-timeJump);
+					}
+					for(int j = 0; j < elevator.length; j++)
+					{
+						elevator[j].setFloorProgress(elevator[j].getFloorProgress()-timeJump);
+					}
+					tempPeopleList = null;
+					tempElevatorList = null;*/
+				}
 			}
 		}
 		
