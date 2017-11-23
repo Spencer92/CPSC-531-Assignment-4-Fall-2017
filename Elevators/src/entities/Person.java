@@ -11,6 +11,7 @@ public class Person
 	private PersonStates state = PersonStates.WAITING_TO_WORK;
 	private Elevators elevator;
 	private int name;
+	private int currentFloor = 0;
 	
 	public Person(Elevators elevator)
 	{
