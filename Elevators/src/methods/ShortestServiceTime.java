@@ -19,4 +19,10 @@ public class ShortestServiceTime extends Method
 		return 0;
 	}
 
+	@Override
+	public double floorTimeJump(double elevatorFloor, double personFloor) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

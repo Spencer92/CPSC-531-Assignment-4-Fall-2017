@@ -5,6 +5,8 @@ import java.util.Random;
 import java.util.Scanner;
 
 import entities.*;
+import methods.FirstComeFirstServe;
+import methods.Method;
 import states.PersonStates;
 import states.ElevatorStates;
 import states.NextEventStates;
@@ -21,6 +23,7 @@ public class Elevators {
 	public static final int SEED_PERSON_WORK = 20089;
 	public static final int SEED_PERSON_FLOOR = 30071;
 	public static final int SEED_INDECISIVE = 40093;
+	public static final int SEED_ELEVATOR_DECISION = 50021;
 	private Random personArrival;
 	private Random personWork;
 	private Random personFloor;
@@ -28,7 +31,7 @@ public class Elevators {
 	private int floors = 1;
 	private double lambdaArrival = 0.5;
 	private double meanWorkRate = 60;
-	private double floorChangeRate = 1/6;
+	private double floorChangeRate = 10;
 	private double timeStamp;
 	private int numElevators;
 	private boolean debug = true;
@@ -36,6 +39,8 @@ public class Elevators {
 	private int elevatorNumber;
 	private int next;
 	private int eventAfterNext;
+	private double minute = 60.0;
+	private Random elevatorDecision;
 	
 	public Elevators(String [] args)
 	{
@@ -43,6 +48,7 @@ public class Elevators {
 		personWork = new Random(SEED_PERSON_WORK);
 		personFloor = new Random(SEED_PERSON_FLOOR);
 		indecisive = new Random(SEED_INDECISIVE);
+		elevatorDecision = new Random(SEED_ELEVATOR_DECISION);
 		timeStamp = 0;
 		numElevators = 1;
 		personNumber = 0;
@@ -50,11 +56,221 @@ public class Elevators {
 	}
 	
 	
+	
+	
 	public void start()
 	{
 		LinkedList<Person> people = new LinkedList<Person>();
 		LinkedList<Elevator> elevators = new LinkedList<Elevator>();
+		int nextElevator;
+		int nextPerson;
+		Method moveMethod = new FirstComeFirstServe();
+		double timeSkip;
+		int closestElevator;
+		
+		for(int i = 0; i < numElevators; i++)
+		{
+			elevators.add(new Elevator(this));
+		}
+		
+		people.add(new Person(this));
+		
+		for(int i = 0; i < 10; i++)
+		{
+			nextElevator = -1;
+			
+			//Check for idle elevators
+			for(int j = 0; j < elevators.size(); j++)
+			{
+				if(elevators.get(j).getState().compareTo(ElevatorStates.IDLE) == 0)
+				{
+					nextElevator = j;
+					break;
+				}
+			}
+			
+			
+			//There is an idle elevator
+			if(nextElevator != -1)
+			{
+				//find the next relevant person
+				nextPerson = nextPersonEvent(people);
+
+				//check to see if the elevator is on that floor
+				if(!(elevators.get(nextElevator).getCurrentFloorPosition() == people.get(nextPerson).getCurrentFloor()))
+				{
+					elevators.get(nextElevator).addFloorRequest(people.get(nextPerson).getCurrentFloor());
+					
+					//see what floor to move
+					if(elevators.get(nextElevator).getCurrentFloorPosition() > people.get(nextPerson).getCurrentFloor())
+					{
+						elevators.get(nextElevator).setState(ElevatorStates.MOVING_DOWN);
+
+					}
+					else
+					{
+						elevators.get(nextElevator).setState(ElevatorStates.MOVING_UP);
+					}
+					people.get(nextPerson).setState(PersonStates.WAITING);
+				}
+				else
+				{
+					for(Person person : people)
+					{
+						if(person.getCurrentFloor() == elevators.get(nextElevator).getCurrentFloorPosition()
+								&&
+								person.getState().compareTo(PersonStates.WAITING) == 0)
+						{
+							elevators.get(nextElevator).addFloorRequest(person.getFloor());
+							person.setState(PersonStates.IN_ELEVATOR);
+						}
+						else if(person.getFloor() == elevators.get(nextElevator).getCurrentFloorPosition()
+								&&
+								person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0)
+						{
+							//Need to do waiting in elevator to leave
+							//and waiting in elevator to work
+						}
+					}
+				}
+			}
+			else
+			{
+				//Still get next person, and add request
+				nextPerson = nextPersonEvent(people);
+				nextElevator = elevatorDecision.nextInt(elevators.size());
+				elevators.get(nextElevator).addFloorRequest(people.get(nextPerson).getCurrentFloor());
+			}
+			
+			closestElevator = shortestElevatorToFloor(elevators);
+			
+			if(timeStamp + elevators.get(closestElevator).distanceFromFloor() < people.get(nextPerson).getNextRelevantTime())
+			{
+				timeStamp += elevators.get(closestElevator).distanceFromFloor();
+				for(int j = 0; j < elevators.size(); j++)
+				{
+					if(elevators.get(j).getState().compareTo(ElevatorStates.MOVING_UP) == 0)
+					{
+						elevators.get(j).setCurrentFloorPosition(elevators.get(j).getCurrentFloorPosition()+elevators.get(closestElevator).distanceFromFloor());
+					}
+					else if(elevators.get(j).getState().compareTo(ElevatorStates.MOVING_DOWN) == 0)
+					{
+						elevators.get(j).setCurrentFloorPosition(elevators.get(j).getCurrentFloorPosition()-elevators.get(closestElevator).distanceFromFloor());						
+					}
+				}
+			}
+			else
+			{
+				timeStamp += timeSkip = people.get(nextPerson).getNextRelevantTime()-elevators.get(closestElevator).distanceFromFloor();
+				for(int j = 0; j < elevators.size(); j++)
+				{
+					if(elevators.get(j).getState().compareTo(ElevatorStates.MOVING_UP) == 0)
+					{
+						elevators.get(j).setCurrentFloorPosition(elevators.get(j).getCurrentFloorPosition()+timeSkip);
+					}
+					else if(elevators.get(j).getState().compareTo(ElevatorStates.MOVING_DOWN) == 0)
+					{
+						elevators.get(j).setCurrentFloorPosition(elevators.get(j).getCurrentFloorPosition()-timeSkip);						
+					}
+				}
+			}
+			
+		}
+		
+		
+		//Person arrives
+		
+		//Person wants floor
+		
+			//Case 1 - Elevator is busy
+				
+				//put request in
+		
+					//while not in elevator
+		
+						//add delay
+		
+			//Case 2 - Elevator is idle
+				
+				//If elevator not on floor
+		
+					//put request in
+		
+						//while not in elevator
+						
+							//add delay
+		
+		//Person is in elevator
+		
+		//Person works
+	
+		//Person finishes working
+	
+		//person wants floor
+	
+			//Case 1 - Elevator is busy
+		
+				//put request in
+			
+					//while not in elevator
+	
+						//add delay
+		
+			//Case 2 - Elevator is idle
+		
+				//if elevator not on floor
+		
+					//put request in
+		
+						//while not in elevator
+		
+							//add delay
+		
+		
+		
+		
+		
+	}
+	
+	
+	public int shortestElevatorToFloor(LinkedList<Elevator> elevators)
+	{
+		int smallest = elevators.size()-1;
+		
+		for(int i = 0; i < elevators.size()-1; i++)
+		{
+			if(elevators.get(smallest).distanceFromFloor() > elevators.get(i).distanceFromFloor())
+			{
+				smallest = i;
+			}
+		}
+		return smallest;
+	}
+	
+	
+	public int nextPersonEvent(LinkedList<Person> people)
+	{
+		int smallest = people.size()-1;
+		for(int i = 0; i < people.size()-1; i++)
+		{
+			if(people.get(i).getNextRelevantTime() < people.get(smallest).getNextRelevantTime())
+			{
+				smallest = i;
+			}
+		}
+		
+		return smallest;
+	}
+	
+	
+	/*
+	public void start()
+	{
+		LinkedList<Person> people = new LinkedList<Person>();
+		LinkedList<Elevator> elevators = new LinkedList<Elevator>();
+		Method nextFloor = new FirstComeFirstServe();
 		int availableElevator;
+		int floorCrossingTime = 10; //in seconds
 		
 		//Check status of all people
 		//Check status of all elevators
@@ -79,7 +295,9 @@ public class Elevators {
 							&&
 							person.getCurrentFloor() == elevators.get(availableElevator).getFloorOn()))
 					{
-								
+						nextFloor.add(person.getFloorRequested());
+						
+						
 					}
 						
 				}
@@ -93,6 +311,30 @@ public class Elevators {
 		
 		
 		
+	}
+	
+	
+	private double moveForwardTime(Person person, Elevator elevator)
+	{
+		if(person.getState().compareTo(PersonStates.WAITING_TO_WORK) == 0)
+		{
+			if((elevator.getFloorProgress() + floorChangeRate)/minute > person.getArrivalTime())
+			{
+				elevator.setFloorProgress(elevator.getFloorProgress()+((((elevator.getFloorProgress()+floorChangeRate)/minute)-person.getArrivalTime())*minute));
+			}
+		}
+	}
+	
+	private double abs(int val1, int val2)
+	{
+		if(val1 > val2)
+		{
+			return val1-val2;
+		}
+		else
+		{
+			return val2-val1;
+		}
 	}
 	
 	private int allBusyElevators(LinkedList<Elevator> elevators)
@@ -113,7 +355,7 @@ public class Elevators {
 		
 	}
 	
-	
+	*/
 /*	
 	public void start()
 	{
@@ -386,7 +628,7 @@ public class Elevators {
 		
 		
 	}*/
-	
+/*	
 	public double timeJumpPerson(NextEventStates eventAfterNext, int entityAfterNext, LinkedList<Person> tempPeopleList, int next)
 	{
 		
@@ -401,28 +643,10 @@ public class Elevators {
 
 		return 0;
 	}
+	*/
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+/*	
 	public NextEventStates nextEvent(LinkedList<Person> people, Elevator[] elevator, double base)
 	{
 		NextEventStates lowest = null;
@@ -542,7 +766,7 @@ public class Elevators {
 		
 		return lowest;
 	}
-	
+*/	
 	public int getElevatorName()
 	{
 		return this.elevatorNumber++;

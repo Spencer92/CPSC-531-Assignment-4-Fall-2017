@@ -20,4 +20,15 @@ public class FirstComeFirstServe extends Method
 		return floorRequests.getFirst();
 	}
 
+	@Override
+	public double floorTimeJump(double elevatorFloor, double personFloor) 
+	{
+		double floorChange = Math.abs(elevatorFloor-personFloor);
+		
+		floorChange *= 10;
+		floorChange /= 60;
+		
+		return floorChange;
+	}
+
 }

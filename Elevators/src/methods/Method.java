@@ -10,4 +10,6 @@ public abstract class Method
 	
 	public abstract int nextFloor();
 	
+	public abstract double floorTimeJump(double elevatorFloor, double personFloor);
+	
 }
