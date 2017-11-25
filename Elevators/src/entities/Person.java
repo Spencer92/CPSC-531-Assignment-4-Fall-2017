@@ -24,7 +24,7 @@ public class Person
 	public Person(Elevators elevator, double prevArrivalTime)
 	{
 		this.elevator = elevator;
-		this.floor = elevator.getFloor();
+		this.floor = elevator.getFloor()*10;
 		this.workTime = elevator.getWork();
 		this.arrival = elevator.getArrival() + prevArrivalTime;
 		this.nextRelevantTime = arrival;

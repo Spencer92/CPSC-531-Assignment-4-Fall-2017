@@ -81,12 +81,22 @@ public class Elevators {
 		
 		while(timeStamp < 3600)
 		{
+			nextElevator = -1;
 			for(int j = 0; j < elevators.size(); j++)
 			{
 				if(elevators.get(j).getState().compareTo(ElevatorStates.IDLE) == 0)
 				{
 					nextElevator = j;
 					break;
+				}
+			}
+			
+			if(nextElevator == -1)
+			{
+				nextElevator = elevatorDecision.nextInt(elevators.size());
+				if(debug)
+				{
+					System.out.println("All elevators busy");
 				}
 			}
 			
@@ -98,9 +108,9 @@ public class Elevators {
 				System.out.println("and will arrive at: " + aPerson.getAbsArrival());
 			}
 			
-			//Theres an available elevator
+			//The next elevator needs to do something
 			
-			if(people.size() > 0 && nextElevator != -1)
+			if(people.size() > 0)
 			{
 				nextPerson = nextPersonEvent(people);
 				
@@ -145,6 +155,17 @@ public class Elevators {
 					{
 						elevators.get(nextElevator).setState(ElevatorStates.IDLE);
 					}
+					else
+					{
+						if(elevators.get(nextElevator).getFloorRequest(0) > elevators.get(nextElevator).getCurrentFloorPosition())
+						{
+							elevators.get(nextElevator).setState(ElevatorStates.MOVING_UP);
+						}
+						else
+						{
+							elevators.get(nextElevator).setState(ElevatorStates.MOVING_DOWN);
+						}
+					}
 					
 				}
 				else
@@ -155,10 +176,6 @@ public class Elevators {
 					}
 					
 				}
-				
-			}
-			else if(people.size() > 0 && nextElevator == -1)
-			{
 				
 			}
 			
