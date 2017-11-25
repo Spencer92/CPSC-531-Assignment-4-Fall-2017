@@ -176,7 +176,26 @@ public class Elevators {
 					}
 					
 				}
+				int moveTime;
 				
+				moveTime = shortestElevatorToFloor(elevators);
+				
+				if(moveTime > people.get(nextPerson).getNextRelevantTime())
+				{
+					moveTime -= people.get(nextPerson).getNextRelevantTime();
+					timeStamp += moveTime;
+					if(people.get(nextPerson).getCurrentFloor() == 0)
+					{
+						aPerson = new Person(this,people.get(nextPerson).getAbsArrival());
+					}
+				}
+				
+			}
+			else
+			{
+				aPerson.setState(PersonStates.WAITING);
+				people.add(aPerson);
+				aPerson = new Person(this,aPerson.getAbsArrival());
 			}
 			
 		}
