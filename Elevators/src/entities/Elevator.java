@@ -34,9 +34,19 @@ public class Elevator
 		floorRequests.removeFirst();
 	}
 	
+	public void removeFloorRequest(int index)
+	{
+		floorRequests.remove(index);
+	}
+	
 	public int getFloorRequest(int index)
 	{
 		return floorRequests.get(index);
+	}
+	
+	public int floorRequestSize()
+	{
+		return floorRequests.size();
 	}
 	
 	public int getFloorOn() {
@@ -95,6 +105,10 @@ public class Elevator
 		{
 			distance = (double) ((int) this.currentFloorPosition-1);
 			distance = this.currentFloorPosition - distance;
+		}
+		else if(this.state.compareTo(ElevatorStates.IDLE) == 0)
+		{
+			distance = 0;
 		}
 		else
 		{

@@ -11,13 +11,15 @@ public class Person
 	private int absFloor;
 	private double arrival;
 	private double absArrival;
-	private double delay;
+	private double leaveDelay;
+	private double workDelay;
 	private double workTime;
 	private double nextRelevantTime;
 	private PersonStates state = PersonStates.ARRIVING;
 	private int name;
 	private double addedWaitTime;
 	private int currentFloor;
+	private double elevatorWait;
 	
 	public Person(Elevators elevator)
 	{
@@ -29,6 +31,26 @@ public class Person
 		this.name = elevator.getPersonName();
 		this.currentFloor = 0;
 		this.absArrival = arrival;
+		this.workDelay = 0.0;
+		this.leaveDelay = 0.0;
+		this.elevatorWait = 0.0;
+		this.name = elevator.getPersonName();
+	}
+	
+	public int getName()
+	{
+		return name;
+	}
+	
+	
+	public double getElevatorWait()
+	{
+		return elevatorWait;
+	}
+	
+	public void setElevatorWait(double elevatorWait)
+	{
+		this.elevatorWait = elevatorWait;
 	}
 	
 	public PersonStates getState()
@@ -101,14 +123,29 @@ public class Person
 		this.nextRelevantTime = nextRelevantTime;
 	}
 	
-	public double getDelay()
+	public double getLeaveDelay()
 	{
-		return this.delay;
+		return this.leaveDelay;
 	}
 	
-	public void setDelay(double delay)
+	public void setLeaveDelay(double delay)
 	{
-		this.delay = delay;
+		this.leaveDelay = delay;
+	}
+	
+	public double getWorkDelay()
+	{
+		return this.workDelay;
+	}
+	
+	public void setWorkDelay(double workDelay)
+	{
+		this.workDelay = workDelay;
+	}
+	
+	public void setArrival(double arrival)
+	{
+		this.arrival = arrival;
 	}
 	
 	/*
