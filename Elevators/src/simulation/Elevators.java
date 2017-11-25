@@ -29,8 +29,8 @@ public class Elevators {
 	private Random personFloor;
 	private Random indecisive;
 	private int floors = 2;
-	private double lambdaArrival = 0.5;
-	private double meanWorkRate = 60;
+	private double lambdaArrival = 30;//0.5; rate change from sec to minutes
+	private double meanWorkRate = 3600;
 	private double floorChangeRate = 10;
 	private double timeStamp;
 	private int numElevators;
