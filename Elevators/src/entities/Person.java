@@ -21,12 +21,12 @@ public class Person
 	private int currentFloor;
 	private double elevatorWait;
 	
-	public Person(Elevators elevator)
+	public Person(Elevators elevator, double prevArrivalTime)
 	{
 		this.elevator = elevator;
 		this.floor = elevator.getFloor();
 		this.workTime = elevator.getWork();
-		this.arrival = elevator.getArrival();
+		this.arrival = elevator.getArrival() + prevArrivalTime;
 		this.nextRelevantTime = arrival;
 		this.name = elevator.getPersonName();
 		this.currentFloor = 0;

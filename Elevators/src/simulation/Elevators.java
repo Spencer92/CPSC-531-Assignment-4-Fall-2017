@@ -58,8 +58,85 @@ public class Elevators {
 	}
 	
 	
+	public void start()
+	{
+		LinkedList<Elevator> elevators = new LinkedList<Elevator>();
+		LinkedList<Person> people = new LinkedList<Person>();
+		int nextElevator = -1;
+		int nextPerson;
+		Person aPerson = new Person(this,0);
+		
+		
+		//Elevator: 
+		//Elevator waits for request
+		//Once request given, elevator moves to floor
+		//If more requests given, elevator puts in queue
+			//Elevator processes requests based on method
+		
+		//Person: 
+		//Person arrives
+		//Person presses button
+		//Person waits
+		//Once time hits person arrival, then new person generated
+		
+		while(timeStamp < 3600)
+		{
+			for(int j = 0; j < elevators.size(); j++)
+			{
+				if(elevators.get(j).getState().compareTo(ElevatorStates.IDLE) == 0)
+				{
+					nextElevator = j;
+					break;
+				}
+			}
+			
+			if(debug)
+			{
+				System.out.println("The next elevator will be: " + nextElevator);
+				
+				System.out.println("THe next person arrival will be " + aPerson.getName());
+				System.out.println("and will arrive at: " + aPerson.getAbsArrival());
+			}
+			
+			//Theres an available elevator
+			
+			if(people.size() > 0 && nextElevator != -1)
+			{
+				nextPerson = nextPersonEvent(people);
+				
+				//Elevator is on same floor
+				if(elevators.get(nextElevator).getCurrentFloorPosition() == people.get(nextPerson).getCurrentFloor())
+				{
+					elevators.get(nextElevator).addFloorRequest(people.get(nextPerson).getFloor());
+					people.get(nextPerson).setFloor(0);
+					people.get(nextPerson).setState(PersonStates.IN_ELEVATOR);
+					
+					for(Person person : people)
+					{
+						if(person.getFloor() == 0 && elevators.get(nextElevator).getCurrentFloorPosition() == 0.0)
+						{
+							person.setState(PersonStates.LEFT);
+						}
+						else if(person.getFloor() != 0 && elevators.get(nextElevator).getCurrentFloorPosition() == person.getFloor())
+						{
+							person.setState(PersonStates.WORKING);
+						}
+					}
+					for(int j = 0; j < elevators.get(nextElevator).floorRequestSize(); j++)
+					{
+						if(elevators.get(nextElevator).getFloorRequest(j) == elevators.get(nextElevator).getCurrentFloorPosition())
+						elevators.get(nextElevator).removeFloorRequest(j);
+					}
+					
+				}
+				
+			}
+			
+		}
+	}
 	
 	
+/*	
 	public void start()
 	{
 		LinkedList<Person> people = new LinkedList<Person>();
@@ -70,13 +147,15 @@ public class Elevators {
 		double timeSkip;
 		int closestElevator;
 		Scanner debugScanner = new Scanner(System.in);
+		Person aPerson;
 		
 		for(int i = 0; i < numElevators; i++)
 		{
 			elevators.add(new Elevator(this));
 		}
 		
-		people.add(new Person(this));
+//		aPerson = new Person(this,0);
+		people.add(new Person(this,0));
 		
 		for(int i = 0; i < 10; i++)
 		{
@@ -95,6 +174,8 @@ public class Elevators {
 			
 			if(debug)
 			{
+				
+				System.out.println("Current Time stamp is: " + timeStamp);
 				System.out.println("Elevator Selected: " + nextElevator);
 				for(Elevator anElevator : elevators)
 				{
@@ -109,11 +190,13 @@ public class Elevators {
 				debugScanner = new Scanner(System.in);
 			}
 			
+			nextPerson = nextPersonEvent(people);
+					
 			//There is an idle elevator
 			if(nextElevator != -1)
 			{
 				//find the next relevant person
-				nextPerson = nextPersonEvent(people);
+//				nextPerson = nextPersonEvent(people);
 				
 				if(debug)
 				{
@@ -155,7 +238,7 @@ public class Elevators {
 					{
 						elevators.get(nextElevator).setState(ElevatorStates.MOVING_UP);
 					}*/
-					people.get(nextPerson).setState(PersonStates.WAITING);
+/*					people.get(nextPerson).setState(PersonStates.WAITING);
 				}
 				else
 				{
@@ -220,13 +303,13 @@ public class Elevators {
 					elevators.get(nextElevator).setState(ElevatorStates.IDLE);
 				}
 			}
-
+			else
 			{
 				
 				
 				
 				//Still get next person, and add request
-				nextPerson = nextPersonEvent(people);
+//				nextPerson = nextPersonEvent(people);
 				nextElevator = elevatorDecision.nextInt(elevators.size());
 				elevators.get(nextElevator).addFloorRequest(people.get(nextPerson).getCurrentFloor());
 				
@@ -383,7 +466,7 @@ public class Elevators {
 						person.setElevatorWait(person.getElevatorWait() + timeSkip);
 					}
 				}
-				if(people.get(nextPerson).getCurrentFloor() == 0) //So is an arrival
+/*				if(people.get(nextPerson).getCurrentFloor() == 0) //So is an arrival
 				{
 					if(debug)
 					{
@@ -393,11 +476,11 @@ public class Elevators {
 					debugScanner.nextLine();
 					debugScanner = new Scanner(System.in);
 					
-					people.add(new Person(this));
-				}
-			}
+					people.add(new Person(this, people.get(nextPerson).getAbsArrival()));
+				}*/
+//			}
 			
-		}
+//		}
 		
 		
 		//Person arrives
@@ -452,7 +535,7 @@ public class Elevators {
 		
 		
 		
-	}
+//	}
 	
 	
 	public int shortestElevatorToFloor(LinkedList<Elevator> elevators)
@@ -475,7 +558,7 @@ public class Elevators {
 		int smallest = people.size()-1;
 		for(int i = 0; i < people.size()-1; i++)
 		{
-			if(people.get(i).getNextRelevantTime() < people.get(smallest).getNextRelevantTime())
+			if(people.get(i).getState().compareTo(PersonStates.LEFT) != 0 && people.get(i).getNextRelevantTime() < people.get(smallest).getNextRelevantTime())
 			{
 				smallest = i;
 			}
