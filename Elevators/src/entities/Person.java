@@ -18,7 +18,7 @@ public class Person
 	private PersonStates state = PersonStates.ARRIVING;
 	private int name;
 	private double addedWaitTime;
-	private int currentFloor;
+	private double currentFloor;
 	private double elevatorWait;
 	
 	public Person(Elevators elevator, double prevArrivalTime)
@@ -68,7 +68,7 @@ public class Person
 		return this.absArrival;
 	}
 	
-	public int getCurrentFloor()
+	public double getCurrentFloor()
 	{
 		return this.currentFloor;
 	}
