@@ -73,7 +73,7 @@ public class Person
 		return this.currentFloor;
 	}
 	
-	public void setCurrentFloor(int currentFloor)
+	public void setCurrentFloor(double currentFloor)
 	{
 		this.currentFloor = currentFloor;
 	}
