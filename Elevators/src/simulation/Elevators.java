@@ -253,10 +253,18 @@ public class Elevators {
 					}
 				}
 				
-				double aDouble = elevators.get(shortestElevatorRequestTime).getFloorRequest(0);
-				aDouble += timeStamp;
-				double moveTime = aDouble - elevators.get(shortestElevatorRequestTime).getCurrentFloorPosition();
+				double moveTime;
 				
+				if(elevators.get(shortestElevatorRequestTime).floorRequestSize() > 0)
+				{
+					double aDouble = elevators.get(shortestElevatorRequestTime).getFloorRequest(0);
+					aDouble += timeStamp;
+					moveTime = aDouble - elevators.get(shortestElevatorRequestTime).getCurrentFloorPosition();
+				}
+				else
+				{
+					moveTime = 0;
+				}
 				if(moveTime < 0.0)
 				{
 					moveTime *= -1;
@@ -265,7 +273,15 @@ public class Elevators {
 				if(debug)
 				{
 					System.out.println("The next moveTime will be " + moveTime + " for elevator " + elevators.get(nextElevator).getName());
-					System.out.println("The next floor the elevator is going to is " + elevators.get(nextElevator).getFloorRequest(0));
+					System.out.print("The next floor the elevator is going to is ");
+					try
+					{
+						System.out.println(elevators.get(nextElevator).getFloorRequest(0));						
+					}
+					catch (IndexOutOfBoundsException e)
+					{
+						System.out.println("Nothing yet");
+					}
 					System.out.println("The next personTime will be " + people.get(nextPerson).getNextRelevantTime() + " for person " + 
 					people.get(nextPerson).getName());
 				}
@@ -386,6 +402,21 @@ public class Elevators {
 					{
 						person.setElevatorWait(person.getElevatorWait() + moveTime);
 					}
+				}
+				
+				if(people.get(nextPerson).getCurrentFloor() == 0.0)
+				{
+					if(debug)
+					{
+						System.out.println("And they are coming to work");
+					}
+					aPerson = new Person(this,aPerson.getAbsArrival());
+				}
+				
+				if(debug)
+				{
+					input.nextLine();
+					input = new Scanner(System.in);
 				}
 				
 /*				for(Elevator elevator : elevators)
