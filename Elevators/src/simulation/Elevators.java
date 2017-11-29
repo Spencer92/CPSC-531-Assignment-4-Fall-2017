@@ -69,7 +69,7 @@ public class Elevators {
 		Person aPerson = new Person(this,0);
 		Scanner input = new Scanner(System.in);
 		
-		
+		System.out.println("Person " + aPerson.getName() + " created");
 		for(int i = 0; i < numElevators; i++)
 		{
 			elevators.add(new Elevator(this));
@@ -164,14 +164,19 @@ public class Elevators {
 					{
 						if(debug)
 						{
-							if(person.getState().compareTo(PersonStates.WORKING) != 0)
+							if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0)
 							{
 								System.out.println("Person " + person.getName() + " wants floor " + person.getFloor() + " and elevator is on floor " + elevators.get(nextElevator).getCurrentFloorPosition());
+							}
+							else if(person.getState().compareTo(PersonStates.WAITING) == 0)
+							{
+								System.out.println("Person " + person.getName() + " wants floor " + person.getCurrentFloor() + " and elevator is on floor " + elevators.get(nextElevator).getCurrentFloorPosition());
 							}
 							else
 							{
 								System.out.println("Person " + person.getName() + " is working");
 							}
+							System.out.println("Person " + person.getName() + " next relevant time is " + person.getNextRelevantTime());
 							input.nextLine();
 							input = new Scanner(System.in);
 						}
@@ -185,7 +190,7 @@ public class Elevators {
 							person.setFloor(0);
 							person.setNextRelevantTime(person.getAbsArrival() + person.getWorkDelay() + person.getWorkTime() + person.getElevatorWait());
 						}
-						else if(person.getState().compareTo(PersonStates.WAITING) == 0)
+						else if(person.getState().compareTo(PersonStates.WAITING) == 0 && person.getCurrentFloor() == elevators.get(nextElevator).getCurrentFloorPosition())
 						{
 							if(debug)
 							{
@@ -202,9 +207,13 @@ public class Elevators {
 					{
 						for(Person person : people)
 						{
-							if(person.getState().compareTo(PersonStates.WAITING) == 0 || person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0)
+							if(person.getState().compareTo(PersonStates.WAITING) == 0)
 							{
-								System.out.println("Person " + person.getName() + " requested " + person.getFloor());
+								System.out.println("Person " + person.getName() + " requested " + person.getCurrentFloor());
+							}
+							else if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0)
+							{
+								System.out.println("Person " + person.getName() + " requested " + person.getFloor());								
 							}
 							else if(person.getState().compareTo(PersonStates.WORKING) == 0)
 							{
@@ -334,10 +343,11 @@ public class Elevators {
 					if(debug)
 					{
 						System.out.println("A new person will be arriving");
+						System.out.println("TimeStamp is " + timeStamp);
 						input.nextLine();
 						input = new Scanner(System.in);
 					}
-					aPerson.setState(PersonStates.WAITING);
+//					aPerson.setState(PersonStates.WAITING);
 					people.add(aPerson);
 					nextPerson = people.size()-1;
 					aPerson = new Person(this,aPerson.getAbsArrival());
@@ -348,9 +358,19 @@ public class Elevators {
 					if(debug)
 					{
 						System.out.println("No new person will be arriving yet");
+						System.out.println("TimeStamp is " + timeStamp);
 						input.nextLine();
 						input = new Scanner(System.in);
 					}
+					
+					for(Person person : people)
+					{
+						if(person.getNextRelevantTime() < timeStamp)
+						{
+							person.setNextRelevantTime(timeStamp);
+						}
+					}
+					
 					nextPerson = nextPersonEvent(people);
 				}
 				
@@ -379,8 +399,66 @@ public class Elevators {
 						System.out.println("moveTime is going to be " + (moveTime - people.get(nextPerson).getNextRelevantTime()));
 						System.out.println("Next event will be person " + people.get(nextPerson).getName() + " doing something");
 					}
+					
+					if(people.get(nextPerson).getState().compareTo(PersonStates.ARRIVING) == 0
+							&&
+							people.get(nextPerson).getAbsArrival() == timeStamp)
+					{
+						people.get(nextPerson).setState(PersonStates.WAITING);
+					}
+					
 					moveTime -= people.get(nextPerson).getNextRelevantTime();
+//					timeStamp += moveTime;
+					
+					double shortestNext = moveTime;
+					if(debug)
+					{
+						if(people.size() > 1)
+						{
+							System.out.println("More than one person detected, finding if there is another person");
+							for(Person person : people)
+							{
+								System.out.println("Person " + person.getName() + " nextRelevant is " + person.getNextRelevantTime());
+							}							
+							input.nextLine();
+							input = new Scanner(System.in);
+						}
+					}
+					
+					if(people.size() > 1)
+					{
+						for(int j = 0; j < people.size(); j++)
+						{
+							if(timeStamp + shortestNext > people.get(j).getNextRelevantTime() && timeStamp < people.get(j).getNextRelevantTime())
+							{
+								if(debug)
+								{
+									System.out.println("ShortestNext is " + shortestNext);
+									System.out.println("TimeStamp is " + timeStamp);
+									System.out.println("Person " + people.get(j).getName() + " time is " + people.get(j).getNextRelevantTime());
+									input.nextLine();
+									input = new Scanner(System.in);
+								}
+								shortestNext = people.get(j).getNextRelevantTime() - timeStamp;
+								nextPerson = j;
+							}
+						}
+						if(people.get(nextPerson).getState().compareTo(PersonStates.ARRIVING) == 0 || people.get(nextPerson).getState().compareTo(PersonStates.WORKING) == 0)
+						{
+							people.get(nextPerson).setState(PersonStates.WAITING);
+							elevators.get(nextElevator).addFloorRequest((int)people.get(nextPerson).getCurrentFloor());
+						}
+						moveTime = shortestNext;
+					}
 					timeStamp += moveTime;
+					if(debug)
+					{
+						System.out.println("New moveTime is going to be " + moveTime);
+						System.out.println("Next event will be person " + people.get(nextPerson).getName() + " doing something");
+					}
+//					moveTime -= people.get(nextPerson).getNextRelevantTime();
+//					timeStamp += moveTime;
+
 					
 					for(Elevator elevator : elevators)
 					{
@@ -573,6 +651,14 @@ public class Elevators {
 				}
 			}
 			
+			for(Person person : people)
+			{
+				if(person.getNextRelevantTime() < timeStamp)
+				{
+					person.setNextRelevantTime(timeStamp);
+				}
+			}
+			
 		}
 	}
 	
@@ -629,7 +715,7 @@ public class Elevators {
 	{
 		for(Person person : people)
 		{
-			if(person.getNextRelevantTime() < aPerson.getNextRelevantTime())
+			if(person.getNextRelevantTime() < aPerson.getNextRelevantTime() || person.getState().compareTo(PersonStates.ARRIVING) == 0)
 			{
 				return false;
 			}
