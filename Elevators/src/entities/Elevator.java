@@ -14,8 +14,17 @@ public class Elevator
 	private int name;
 	private Elevators elevator;
 	LinkedList<Integer> floorRequests = new LinkedList<Integer>();
+	private int nextFloorRequest;
 	
 	
+	public int getNextFloorRequest() {
+		return nextFloorRequest;
+	}
+
+	public void setNextFloorRequest(int nextFloorRequest) {
+		this.nextFloorRequest = nextFloorRequest;
+	}
+
 	public Elevator(Elevators elevator)
 	{
 		this.elevator = elevator;
@@ -96,12 +105,12 @@ public class Elevator
 	public double distanceFromFloor()
 	{
 		double distance = 0;
-		if(this.state.compareTo(ElevatorStates.MOVING_UP) == 0)
+		if(this.state.compareTo(ElevatorStates.MOVING_UP) == 0 || this.state.compareTo(ElevatorStates.STOP_UP) == 0)
 		{
 			distance = (double) ((int) this.currentFloorPosition+1);
 			distance -= this.currentFloorPosition;
 		}
-		else if(this.state.compareTo(ElevatorStates.MOVING_DOWN) == 0)
+		else if(this.state.compareTo(ElevatorStates.MOVING_DOWN) == 0 || this.state.compareTo(ElevatorStates.STOP_DOWN) == 0)
 		{
 			distance = (double) ((int) this.currentFloorPosition-1);
 			distance = this.currentFloorPosition - distance;

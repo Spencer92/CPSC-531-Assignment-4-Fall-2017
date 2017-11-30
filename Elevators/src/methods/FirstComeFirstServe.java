@@ -1,5 +1,9 @@
 package methods;
 
+import java.util.LinkedList;
+
+import entities.Elevator;
+
 public class FirstComeFirstServe extends Method
 {
 
@@ -15,9 +19,9 @@ public class FirstComeFirstServe extends Method
 	}
 
 	@Override
-	public int nextFloor() 
+	public int nextFloor(Elevator elevator) 
 	{
-		return floorRequests.getFirst();
+		return 0;
 	}
 
 	@Override
