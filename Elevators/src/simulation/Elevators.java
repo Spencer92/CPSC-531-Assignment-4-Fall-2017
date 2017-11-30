@@ -64,6 +64,7 @@ public class Elevators {
 	{
 		LinkedList<Elevator> elevators = new LinkedList<Elevator>();
 		LinkedList<Person> people = new LinkedList<Person>();
+		LinkedList<Person> leftPeople = new LinkedList<Person>();
 		int nextElevator = -1;
 		int nextPerson;
 		Person aPerson = new Person(this,0);
@@ -122,7 +123,7 @@ public class Elevators {
 			
 			if(people.size() > 0)
 			{
-				nextPerson = nextPersonEvent(people);
+/*				nextPerson = nextPersonEvent(people);
 				
 				if(debug)
 				{
@@ -295,7 +296,78 @@ public class Elevators {
 						
 //					}
 					
+				}*/
+				
+				if(debug)
+				{
+					System.out.println("Current state of people: ");
+					for(Person person : people)
+					{
+						System.out.println("Person " + person.getName() + " state: " + person.getState());
+						System.out.println("Next relevant time: " + person.getNextRelevantTime());
+						System.out.println("Next floor wanted: " + person.getFloor());
+						System.out.println("Floor currently on: " + person.getCurrentFloor());
+						System.out.println("Work time amount: " + person.getWorkTime());
+					}
+					input.nextLine();
+					input = new Scanner(System.in);
 				}
+				
+				for(Person person : people)
+				{
+					
+					if(person.getState().compareTo(PersonStates.ARRIVING) == 0 && person.getAbsArrival() == timeStamp)
+					{
+						elevators.get(nextElevator).addFloorRequest((int)person.getCurrentFloor());
+						person.setState(PersonStates.WAITING);
+					}
+					else if(person.getState().compareTo(PersonStates.WAITING) == 0 && elevators.get(nextElevator).getCurrentFloorPosition() == person.getCurrentFloor())
+					{
+						if(person.getCurrentFloor() != 0)
+						{
+							person.setFloor(0);
+						}
+						elevators.get(nextElevator).addFloorRequest((int)person.getFloor());
+						person.setState(PersonStates.IN_ELEVATOR);
+					}
+					else if(person.getState().compareTo(PersonStates.WORKING) == 0 && person.getNextRelevantTime() == timeStamp)
+					{
+						person.setState(PersonStates.WAITING);
+						person.setFloor(0);
+						elevators.get(nextElevator).addFloorRequest((int)person.getCurrentFloor());
+					}
+					else if(person.getState().compareTo(PersonStates.WAITING) == 0)
+					{
+						elevators.get(nextElevator).addFloorRequest((int)person.getCurrentFloor());
+					}
+					else if(person.getCurrentFloor() == person.getAbsFloor() && timeStamp < person.getNextRelevantTime())
+					{
+						person.setState(PersonStates.WORKING);
+						person.setNextRelevantTime(person.getAbsArrival()+person.getAddedWaitTime()+person.getElevatorWait()+person.getWorkTime());
+						person.setFloor(0);
+					}
+					else if(person.getCurrentFloor() == 0 && person.getFloor() == 0)
+					{
+						person.setState(PersonStates.LEFT);
+					}
+				}
+				
+				for(Person person : people)
+				{
+					if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0 && person.getFloor() == elevators.get(nextElevator).getCurrentFloorPosition())
+					{
+						if(elevators.get(nextElevator).getCurrentFloorPosition() == 0)
+						{
+							person.setState(PersonStates.LEFT);
+						}
+						else
+						{
+							person.setState(PersonStates.WORKING);
+							person.setNextRelevantTime(person.getAbsArrival()+person.getAddedWaitTime()+person.getElevatorWait()+person.getWorkTime());
+						}
+					}
+				}
+				
 				int shortestElevatorRequestTime;
 				
 				
@@ -324,9 +396,15 @@ public class Elevators {
 				
 				if(elevators.get(shortestElevatorRequestTime).floorRequestSize() > 0)
 				{
-					double aDouble = elevators.get(shortestElevatorRequestTime).getFloorRequest(0);
+					double aDouble = Math.abs(elevators.get(shortestElevatorRequestTime).getFloorRequest(0)-elevators.get(shortestElevatorRequestTime).getCurrentFloorPosition());
+					if(debug)
+					{
+						System.out.println("aDouble is " + aDouble);
+						input.nextLine();
+						input = new Scanner(System.in);
+					}
 					aDouble += timeStamp;
-					moveTime = aDouble + elevators.get(shortestElevatorRequestTime).getCurrentFloorPosition();
+					moveTime = aDouble;// + elevators.get(shortestElevatorRequestTime).getCurrentFloorPosition();
 				}
 				else
 				{
@@ -392,8 +470,21 @@ public class Elevators {
 
 
 				
-				if(moveTime > people.get(nextPerson).getNextRelevantTime())
+				if(moveTime > people.get(nextPerson).getNextRelevantTime() || moveTime > aPerson.getAbsArrival())
 				{
+					if(moveTime > aPerson.getAbsArrival())
+					{
+						aPerson.setState(PersonStates.WAITING);
+						people.add(aPerson);
+						aPerson = new Person(this,aPerson.getAbsArrival());
+						if(debug)
+						{
+							System.out.println("Arriving person had to be added");
+							input.nextLine();
+							input = new Scanner(System.in);
+						}
+					}
+					
 					if(debug)
 					{
 						System.out.println("moveTime is going to be " + (moveTime - people.get(nextPerson).getNextRelevantTime()));
@@ -448,6 +539,154 @@ public class Elevators {
 							people.get(nextPerson).setState(PersonStates.WAITING);
 							elevators.get(nextElevator).addFloorRequest((int)people.get(nextPerson).getCurrentFloor());
 						}
+//						else if(people.get(nextPerson).getState().compareTo(PersonStates.IN_ELEVATOR) == 0)
+//						{
+//							elevators.get(nextPerson).addFloorRequest((int)people.get(nextPerson).getFloor();
+//						}
+						moveTime = shortestNext;
+					}
+					timeStamp += moveTime;
+					if(debug)
+					{
+						System.out.println("New moveTime is going to be " + moveTime);
+						System.out.println("Next event will be person " + people.get(nextPerson).getName() + " doing something");
+					}
+//					moveTime -= people.get(nextPerson).getNextRelevantTime();
+//					timeStamp += moveTime;
+
+					
+					for(Elevator elevator : elevators)
+					{
+						if(elevator.getState().compareTo(ElevatorStates.MOVING_UP) == 0)
+						{
+/*							for(Person person : people)
+							{
+								if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0 && person.getCurrentFloor() == elevator.getCurrentFloorPosition())
+								{
+									person.setCurrentFloor(person.getCurrentFloor() + moveTime);
+								}
+							}*/
+							elevator.setCurrentFloorPosition(elevator.getCurrentFloorPosition()+moveTime);
+						}
+						else if(elevator.getState().compareTo(ElevatorStates.MOVING_DOWN) == 0)
+						{
+/*							for(Person person : people)
+							{
+								if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0 && person.getCurrentFloor() == elevator.getCurrentFloorPosition())
+								{
+									person.setCurrentFloor(person.getCurrentFloor() - moveTime);
+								}
+							}*/
+							elevator.setCurrentFloorPosition(elevator.getCurrentFloorPosition()-moveTime);
+						}
+						else if(elevator.getState().compareTo(ElevatorStates.IDLE) == 0)
+						{
+							if(elevator.floorRequestSize() > 0)
+							{
+								if(elevator.getFloorRequest(0) > elevator.getCurrentFloorPosition())
+								{
+									elevator.setCurrentFloorPosition(elevator.getCurrentFloorPosition()+moveTime);
+									elevator.setState(ElevatorStates.MOVING_UP);
+								}
+								else
+								{
+									elevator.setCurrentFloorPosition(elevator.getCurrentFloorPosition()-moveTime);
+									elevator.setState(ElevatorStates.MOVING_DOWN);
+								}
+							}
+						}
+					}
+					
+					
+					if(people.get(nextPerson).getCurrentFloor() == 0.0)
+					{
+						if(debug)
+						{
+							System.out.println("And they are coming to work");
+						}
+//						aPerson = new Person(this,aPerson.getAbsArrival());
+					}
+					
+					if(debug)
+					{
+						input.nextLine();
+						input = new Scanner(System.in);
+					}
+				}
+/*				else if(moveTime > aPerson.getAbsArrival())
+				{
+					
+					aPerson.setState(PersonStates.ARRIVING);
+					elevators.get(nextElevator).addFloorRequest((int)aPerson.getCurrentFloor());
+					people.add(aPerson);
+					nextPerson = people.size()-1;
+					aPerson = new Person(this,aPerson.getAbsArrival());
+					
+					if(debug)
+					{
+						System.out.println("New person arriving");
+						input.nextLine();
+						input = new Scanner(System.in);
+					}
+					
+					if(debug)
+					{
+						System.out.println("moveTime is going to be " + (moveTime - people.get(nextPerson).getNextRelevantTime()));
+						System.out.println("Next event will be person " + people.get(nextPerson).getName() + " doing something");
+					}
+					
+					if(people.get(nextPerson).getState().compareTo(PersonStates.ARRIVING) == 0
+							&&
+							people.get(nextPerson).getAbsArrival() == timeStamp)
+					{
+						people.get(nextPerson).setState(PersonStates.WAITING);
+					}
+					
+					moveTime -= people.get(nextPerson).getNextRelevantTime();
+//					timeStamp += moveTime;
+					
+					double shortestNext = moveTime;
+					if(debug)
+					{
+						if(people.size() > 1)
+						{
+							System.out.println("More than one person detected, finding if there is another person");
+							for(Person person : people)
+							{
+								System.out.println("Person " + person.getName() + " nextRelevant is " + person.getNextRelevantTime());
+							}							
+							input.nextLine();
+							input = new Scanner(System.in);
+						}
+					}
+					
+					if(people.size() > 1)
+					{
+						for(int j = 0; j < people.size(); j++)
+						{
+							if(timeStamp + shortestNext > people.get(j).getNextRelevantTime() && timeStamp < people.get(j).getNextRelevantTime())
+							{
+								if(debug)
+								{
+									System.out.println("ShortestNext is " + shortestNext);
+									System.out.println("TimeStamp is " + timeStamp);
+									System.out.println("Person " + people.get(j).getName() + " time is " + people.get(j).getNextRelevantTime());
+									input.nextLine();
+									input = new Scanner(System.in);
+								}
+								shortestNext = people.get(j).getNextRelevantTime() - timeStamp;
+								nextPerson = j;
+							}
+						}
+						if(people.get(nextPerson).getState().compareTo(PersonStates.ARRIVING) == 0 || people.get(nextPerson).getState().compareTo(PersonStates.WORKING) == 0)
+						{
+							people.get(nextPerson).setState(PersonStates.WAITING);
+							elevators.get(nextElevator).addFloorRequest((int)people.get(nextPerson).getCurrentFloor());
+						}
+//						else if(people.get(nextPerson).getState().compareTo(PersonStates.IN_ELEVATOR) == 0)
+//						{
+//							elevators.get(nextPerson).addFloorRequest((int)people.get(nextPerson).getFloor();
+//						}
 						moveTime = shortestNext;
 					}
 					timeStamp += moveTime;
@@ -508,7 +747,7 @@ public class Elevators {
 						{
 							System.out.println("And they are coming to work");
 						}
-						aPerson = new Person(this,aPerson.getAbsArrival());
+//						aPerson = new Person(this,aPerson.getAbsArrival());
 					}
 					
 					if(debug)
@@ -516,7 +755,8 @@ public class Elevators {
 						input.nextLine();
 						input = new Scanner(System.in);
 					}
-				}
+
+				}*/
 				else
 				{
 					if(debug)
@@ -538,24 +778,24 @@ public class Elevators {
 					{
 						if(elevator.getState().compareTo(ElevatorStates.MOVING_UP) == 0)
 						{
-							for(Person person : people)
+/*							for(Person person : people)
 							{
 								if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0 && person.getCurrentFloor() == elevator.getCurrentFloorPosition())
 								{
 									person.setCurrentFloor(person.getCurrentFloor() + moveTime);
 								}
-							}
+							}*/
 							elevator.setCurrentFloorPosition(elevator.getCurrentFloorPosition()+moveTime);
 						}
 						else if(elevator.getState().compareTo(ElevatorStates.MOVING_DOWN) == 0)
 						{
-							for(Person person : people)
+/*							for(Person person : people)
 							{
 								if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0 && person.getCurrentFloor() == elevator.getCurrentFloorPosition())
 								{
 									person.setCurrentFloor(person.getCurrentFloor() - moveTime);
 								}
-							}
+							}*/
 							elevator.setCurrentFloorPosition(elevator.getCurrentFloorPosition()-moveTime);
 						}
 					}
@@ -567,12 +807,42 @@ public class Elevators {
 					}
 				}
 				
+				for(Person person : people)
+				{
+					if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0)
+					{
+						if(elevators.get(nextElevator).getState().compareTo(ElevatorStates.MOVING_UP) == 0)
+						{
+							person.setCurrentFloor(person.getCurrentFloor()+moveTime);
+							if(debug)
+							{
+								System.out.println("Moved person " + person.getName() + " up " + moveTime);
+							}
+						}
+						else if(elevators.get(nextElevator).getState().compareTo(ElevatorStates.MOVING_DOWN) == 0)
+						{
+							person.setCurrentFloor(person.getCurrentFloor()-moveTime);
+							if(debug)
+							{
+								System.out.println("Moved person " + person.getName() + " down " + moveTime);
+							}
+						}
+						if(debug)
+						{
+							input.nextLine();
+							input = new Scanner(System.in);
+						}
+						
+					}
+				}
+				
 				if(debug)
 				{
 					System.out.println("Current time stamp is " + timeStamp);
 					input.nextLine();
 					input = new Scanner(System.in);
 				}
+				
 				
 				for(Person person : people)
 				{
@@ -581,10 +851,12 @@ public class Elevators {
 						if(person.getCurrentFloor() == 0)
 						{
 							person.setWorkDelay(person.getWorkDelay() + moveTime);
+							person.setAddedWaitTime(person.getWorkDelay());
 						}
 						else
 						{
 							person.setLeaveDelay(person.getLeaveDelay() + moveTime);
+							person.setAddedWaitTime(person.getLeaveDelay());
 						}
 					}
 					else if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0)
@@ -599,7 +871,7 @@ public class Elevators {
 					{
 						System.out.println("And they are coming to work");
 					}
-					aPerson = new Person(this,aPerson.getAbsArrival());
+//					aPerson = new Person(this,aPerson.getAbsArrival());
 				}
 				
 				if(debug)
@@ -640,6 +912,7 @@ public class Elevators {
 			{
 				timeStamp = aPerson.getAbsArrival();
 				aPerson.setState(PersonStates.WAITING);
+				elevators.get(nextElevator).addFloorRequest((int)aPerson.getCurrentFloor());
 				people.add(aPerson);
 				aPerson = new Person(this,aPerson.getAbsArrival());
 				
@@ -657,8 +930,57 @@ public class Elevators {
 				{
 					person.setNextRelevantTime(timeStamp);
 				}
+				if(person.getState().compareTo(PersonStates.WORKING) == 0)
+				{
+					person.setFloor(0);
+				}
 			}
 			
+			for(Elevator elevator : elevators)
+			{
+				int k = 0;
+				boolean isOnFloor = false;
+				while(k < elevator.floorRequestSize())
+				{
+					if(elevator.getCurrentFloorPosition() == elevator.getFloorRequest(k))
+					{
+						if(debug)
+						{
+							System.out.println("Removing floor request " + elevator.getFloorRequest(k));
+							input.nextLine();
+							input = new Scanner(System.in);
+						}
+						elevator.removeFloorRequest(k);
+						isOnFloor = true;
+					}
+					else
+					{
+						k++;
+					}
+				}
+				if(elevator.floorRequestSize() == 0 || isOnFloor)
+				{
+					elevator.setState(ElevatorStates.IDLE);
+				}
+			}
+			
+			int l = 0;
+			while(l < people.size())
+			{
+				if(people.get(l).getState().compareTo(PersonStates.LEFT) == 0)
+				{
+					if(debug)
+					{
+						System.out.println(people.get(l).getName() + " is on floor " + people.get(l).getCurrentFloor() + " and has left ");
+					}
+					leftPeople.add(people.get(l));
+					people.remove(l);
+				}
+				else
+				{
+					l++;
+				}
+			}
 		}
 	}
 	
