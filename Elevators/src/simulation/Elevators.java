@@ -123,180 +123,6 @@ public class Elevators {
 			
 			if(people.size() > 0)
 			{
-/*				nextPerson = nextPersonEvent(people);
-				
-				if(debug)
-				{
-					System.out.println("The next person parsed is " + people.get(nextPerson).getName());
-					System.out.println("The state of all people are: ");
-					
-					for(Person person : people)
-					{
-						System.out.println("Person " + person.getName() + " is " + person.getState());
-						System.out.println("And is currently on floor " + person.getCurrentFloor());
-					}
-					
-					for(Elevator elevator : elevators)
-					{
-						System.out.println("Elevator " + elevator.getName() + " is " + elevator.getState());
-						System.out.println("And is currently on floor " + elevator.getCurrentFloorPosition());
-					}
-					
-					input.nextLine();
-					input = new Scanner(System.in);
-				}
-				
-				//Elevator is on same floor
-				if(elevators.get(nextElevator).getCurrentFloorPosition() == people.get(nextPerson).getCurrentFloor())
-				{
-					if(debug)
-					{
-						System.out.println("And elevator " + elevators.get(nextElevator).getName() + " is on the same floor");
-//						System.out.println("Floor request for " + people.get(nextPerson).getFloor() + " by " + people.get(nextPerson).getName());
-						input.nextLine();
-						input = new Scanner(System.in);
-					}
-					
-				//	elevators.get(nextElevator).addFloorRequest(people.get(nextPerson).getFloor());
-//					people.get(nextPerson).setFloor(0);
-//					people.get(nextPerson).setState(PersonStates.IN_ELEVATOR);
-					
-					for(Person person : people)
-					{
-						if(debug)
-						{
-							if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0)
-							{
-								System.out.println("Person " + person.getName() + " wants floor " + person.getFloor() + " and elevator is on floor " + elevators.get(nextElevator).getCurrentFloorPosition());
-							}
-							else if(person.getState().compareTo(PersonStates.WAITING) == 0)
-							{
-								System.out.println("Person " + person.getName() + " wants floor " + person.getCurrentFloor() + " and elevator is on floor " + elevators.get(nextElevator).getCurrentFloorPosition());
-							}
-							else
-							{
-								System.out.println("Person " + person.getName() + " is working");
-							}
-							System.out.println("Person " + person.getName() + " next relevant time is " + person.getNextRelevantTime());
-							input.nextLine();
-							input = new Scanner(System.in);
-						}
-						if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0 && person.getFloor() == 0 && elevators.get(nextElevator).getCurrentFloorPosition() == 0.0)
-						{
-							person.setState(PersonStates.LEFT);
-						}
-						else if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0 && person.getFloor() != 0 && elevators.get(nextElevator).getCurrentFloorPosition() == person.getFloor())
-						{
-							person.setState(PersonStates.WORKING);
-							person.setFloor(0);
-							person.setNextRelevantTime(person.getAbsArrival() + person.getWorkDelay() + person.getWorkTime() + person.getElevatorWait());
-						}
-						else if(person.getState().compareTo(PersonStates.WAITING) == 0 && person.getCurrentFloor() == elevators.get(nextElevator).getCurrentFloorPosition())
-						{
-							if(debug)
-							{
-								System.out.println("Floor request " + person.getFloor() + " by person " + person.getName());
-								input.nextLine();
-								input = new Scanner(System.in);
-							}
-							person.setState(PersonStates.IN_ELEVATOR);
-							elevators.get(nextElevator).addFloorRequest(person.getFloor());
-						}
-					}
-					
-					if(debug)
-					{
-						for(Person person : people)
-						{
-							if(person.getState().compareTo(PersonStates.WAITING) == 0)
-							{
-								System.out.println("Person " + person.getName() + " requested " + person.getCurrentFloor());
-							}
-							else if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0)
-							{
-								System.out.println("Person " + person.getName() + " requested " + person.getFloor());								
-							}
-							else if(person.getState().compareTo(PersonStates.WORKING) == 0)
-							{
-								System.out.println("Person " + person.getName() + " is working");
-							}
-						}
-						input.nextLine();
-						input = new Scanner(System.in);
-					}
-					
-					int k = 0;
-					while(k < elevators.get(nextElevator).floorRequestSize())
-					{
-						
-						if(elevators.get(nextElevator).getFloorRequest(k) == elevators.get(nextElevator).getCurrentFloorPosition())
-						{
-							if(debug)
-							{
-								System.out.println("Elevator " + nextElevator + " is removing floor request " + elevators.get(nextElevator).getFloorRequest(k));
-							}
-							
-							elevators.get(nextElevator).removeFloorRequest(k);
-						}
-						else
-						{
-							k++;
-						}
-					}
-					if(debug)
-					{
-						input.nextLine();
-						input = new Scanner(System.in);
-					}
-					if(elevators.get(nextElevator).floorRequestSize() == 0)
-					{
-						elevators.get(nextElevator).setState(ElevatorStates.IDLE);
-					}
-					else
-					{
-						if(elevators.get(nextElevator).getFloorRequest(0) > elevators.get(nextElevator).getCurrentFloorPosition())
-						{
-							elevators.get(nextElevator).setState(ElevatorStates.MOVING_UP);
-						}
-						else
-						{
-							elevators.get(nextElevator).setState(ElevatorStates.MOVING_DOWN);
-						}
-
-					}
-					if(debug)
-					{
-						System.out.println("Elevator " + elevators.get(nextElevator).getName() + " is " + elevators.get(nextElevator).getState());
-						System.out.println("And currently in position " + elevators.get(nextElevator).getCurrentFloorPosition());
-						input.nextLine();
-						input = new Scanner(System.in);
-					}
-					
-				}
-				else
-				{
-					if(debug)
-					{
-						System.out.println("And elevator " + elevators.get(nextElevator).getName() + " is not on same floor");
-						input.nextLine();
-						input = new Scanner(System.in);
-					}
-					
-//					if(people.get(nextPerson).getState().compareTo(PersonStates.WAITING) != 0)
-//					{
-
-						elevators.get(nextElevator).addFloorRequest((int)people.get(nextPerson).getCurrentFloor());
-						if(debug)
-						{
-							System.out.println("Person " + people.get(nextPerson).getName() + " requested floor " + people.get(nextPerson).getCurrentFloor());
-							System.out.println("Elevator " + nextElevator + " current floor request is " + elevators.get(nextElevator).getFloorRequest(0));
-							input.nextLine();
-							input = new Scanner(System.in);
-						}						
-						
-//					}
-					
-				}*/
 				
 				if(debug)
 				{
@@ -340,7 +166,7 @@ public class Elevators {
 					{
 						elevators.get(nextElevator).addFloorRequest((int)person.getCurrentFloor());
 					}
-					else if(person.getCurrentFloor() == person.getAbsFloor() && timeStamp < person.getNextRelevantTime())
+/*					else if(person.getCurrentFloor() == person.getAbsFloor() && timeStamp < person.getNextRelevantTime())
 					{
 						person.setState(PersonStates.WORKING);
 						person.setNextRelevantTime(person.getAbsArrival()+person.getAddedWaitTime()+person.getElevatorWait()+person.getWorkTime());
@@ -349,7 +175,7 @@ public class Elevators {
 					else if(person.getCurrentFloor() == 0 && person.getFloor() == 0)
 					{
 						person.setState(PersonStates.LEFT);
-					}
+					}*/
 				}
 				
 				for(Person person : people)
@@ -363,6 +189,7 @@ public class Elevators {
 						else
 						{
 							person.setState(PersonStates.WORKING);
+							person.setFloor(0);
 							person.setNextRelevantTime(person.getAbsArrival()+person.getAddedWaitTime()+person.getElevatorWait()+person.getWorkTime());
 						}
 					}
@@ -767,8 +594,8 @@ public class Elevators {
 					if(debug)
 					{
 						System.out.println("Theoretical move time: " + (people.get(nextPerson).getNextRelevantTime()-timeStamp));
-						input.nextLine();
-						input = new Scanner(System.in);
+//						input.nextLine();
+//						input = new Scanner(System.in);
 					}
 					
 					moveTime = people.get(nextPerson).getNextRelevantTime() - timeStamp;
@@ -800,11 +627,11 @@ public class Elevators {
 						}
 					}
 					
-					if(debug)
-					{
-						input.nextLine();
-						input = new Scanner(System.in);
-					}
+//					if(debug)
+//					{
+//						input.nextLine();
+//						input = new Scanner(System.in);
+//					}
 				}
 				
 				for(Person person : people)
@@ -839,8 +666,8 @@ public class Elevators {
 				if(debug)
 				{
 					System.out.println("Current time stamp is " + timeStamp);
-					input.nextLine();
-					input = new Scanner(System.in);
+//					input.nextLine();
+//					input = new Scanner(System.in);
 				}
 				
 				
