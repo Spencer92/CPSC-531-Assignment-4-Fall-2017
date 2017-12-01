@@ -20,6 +20,7 @@ public class Person
 	private double addedWaitTime;
 	private double currentFloor;
 	private double elevatorWait;
+	public int elevatorIn;
 	
 	public Person(Elevators elevator, double prevArrivalTime)
 	{
@@ -35,8 +36,17 @@ public class Person
 		this.leaveDelay = 0.0;
 		this.elevatorWait = 0.0;
 		this.name = elevator.getPersonName();
+		elevatorIn = -1;
 	}
 	
+	public int getElevatorIn() {
+		return elevatorIn;
+	}
+
+	public void setElevatorIn(int elevatorIn) {
+		this.elevatorIn = elevatorIn;
+	}
+
 	public int getName()
 	{
 		return name;
