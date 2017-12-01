@@ -9,16 +9,11 @@ import states.ElevatorStates;
 public class LinearScan extends Method
 {
 
-	public LinearScan() {
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public void add(int floorRequest) 
-	{
-//		floorRequests.add(floorRequest);
-	}
-
+	/**
+	 * 
+	 * Find how much the elevator needs to move based on linear scan
+	 * 
+	 */
 	@Override
 	public double nextFloor(Elevator elevator) 
 	{
@@ -27,10 +22,13 @@ public class LinearScan extends Method
 		boolean moreAbove = false;
 		boolean moreBelow = false;
 		
+		
+		//If it was moving up, or it still can move up
 		if(elevator.getState().compareTo(ElevatorStates.MOVING_UP) == 0 || elevator.getPrevElevatorState().compareTo(ElevatorStates.MOVING_UP) == 0)
 		{
 			for(int i = 0; i < elevator.floorRequestSize(); i++)
 			{
+				//See if there are any other floors
 				if(elevator.getFloorRequest(i) > elevator.getCurrentFloorPosition())
 				{
 					moreAbove = true;
@@ -38,10 +36,12 @@ public class LinearScan extends Method
 				}
 			}
 		}
+		//If it was moving down, or still can
 		else if(elevator.getState().compareTo(ElevatorStates.MOVING_DOWN) == 0 || elevator.getPrevElevatorState().compareTo(ElevatorStates.MOVING_DOWN) == 0)
 		{
 			for(int i = 0; i < elevator.floorRequestSize(); i++)
 			{
+				//See if there are any other floors
 				if(elevator.getFloorRequest(i) < elevator.getCurrentFloorPosition())
 				{
 					moreBelow = true;
@@ -50,7 +50,7 @@ public class LinearScan extends Method
 			}
 		}
 		
-		
+		//Find the next floor above that can be serviced
 		if(moreAbove || elevator.getCurrentFloorPosition() == 0.0)
 		{
 			while(next < elevator.floorRequestSize() && elevator.getFloorRequest(next) < elevator.getCurrentFloorPosition())
@@ -80,6 +80,7 @@ public class LinearScan extends Method
 					}
 				}
 			}
+			elevator.setNextFloor(next);
 			if(Elevators.debug)
 			{
 				System.out.println("Moving Up - Current Elevators in queue: ");
@@ -95,6 +96,7 @@ public class LinearScan extends Method
 			movement = ((double)elevator.getFloorRequest(next)) - elevator.getCurrentFloorPosition();
 			return movement;
 		}
+		//Find the next floor below that can be serviced
 		else if(moreBelow || elevator.getCurrentFloorPosition() != 0.0)
 		{
 			while(next < elevator.floorRequestSize() && elevator.getFloorRequest(next) > elevator.getCurrentFloorPosition())
@@ -129,6 +131,7 @@ public class LinearScan extends Method
 					}
 				}
 			}
+			elevator.setNextFloor(next);
 			
 			if(Elevators.debug)
 			{
@@ -146,67 +149,7 @@ public class LinearScan extends Method
 			return movement;
 		}
 		return 0.0;
-		
-		/*
-		int next = 0;
-		if(elevator.getState().compareTo(ElevatorStates.MOVING_UP) == 0 || elevator.getCurrentFloorPosition() == 0.0)//elevator.getState().compareTo(ElevatorStates.MOVING_UP) == 0 || elevator.getPrevElevatorState().compareTo(ElevatorStates.MOVING_UP) == 0)
-		{
-			next = elevator.floorRequestSize()-1;
-			for(int i = 0; i < elevator.floorRequestSize()-1; i++)
-			{
-				if(elevator.getFloorRequest(next) > elevator.getFloorRequest(i))
-				{
-					next = i;
-				}
-			}
-			if(Elevators.debug)
-			{
-				System.out.println("Current Elevators in queue: ");
-				for(int j = 0; j < elevator.floorRequestSize(); j++)
-				{
-					System.out.print(elevator.getFloorRequest(j) + ", ");
-				}
-				System.out.println("\n and next is " + next);
-			}
-		}
-		else if(elevator.getState().compareTo(ElevatorStates.MOVING_DOWN) == 0 || elevator.getCurrentFloorPosition() != 0.0)//elevator.getState().compareTo(ElevatorStates.MOVING_DOWN) == 0 || elevator.getPrevElevatorState().compareTo(ElevatorStates.MOVING_DOWN) == 0)
-		{
-			next = elevator.floorRequestSize()-1;
-			for(int i = 0; i < elevator.floorRequestSize()-1; i++)
-			{
-				if(elevator.getFloorRequest(next) < elevator.getFloorRequest(i))
-				{
-					next = i;
-				}
-			}
-			if(Elevators.debug)
-			{
-				System.out.println("Current Elevators in queue: ");
-				for(int j = 0; j < elevator.floorRequestSize(); j++)
-				{
-					System.out.print(elevator.getFloorRequest(j) + ", ");
-				}
-				System.out.println("\n and next is " + next);
-			}
-		}
-/*		else
-		{
-			try {
-				throw new Exception("Weird thing happening");
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		
-		return next;*/
 	}
 
-	@Override
-	public double floorTimeJump(double elevatorFloor, double personFloor) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
 }

@@ -46,32 +46,87 @@ public class Elevators {
 	
 	public Elevators(String [] args)
 	{
-		personArrival = new Random(SEED_PERSON_ARRIVAL);
-		personWork = new Random(SEED_PERSON_WORK);
-		personFloor = new Random(SEED_PERSON_FLOOR);
-		indecisive = new Random(SEED_INDECISIVE);
-		elevatorDecision = new Random(SEED_ELEVATOR_DECISION);
+		boolean oneTest;
+		boolean idling = false;
+		int policy;
+		boolean policyTruth = false;
+		double time = 0;
+		double lambda = 0;
+		
+		if(args.length > 0)
+		{
+			oneTest = true;
+			idling = Boolean.parseBoolean(args[0]);
+			idling = !idling;
+			if(args[1].equals("0"))
+			{
+				policyTruth = true;
+			}
+			else
+			{
+				policyTruth = false;
+			}
+			time = Double.parseDouble(args[2]);
+			lambda = Double.parseDouble(args[3]);
+		}
+		else
+		{
+			oneTest = false;
+		}
+		if(oneTest)
+		{
+			personArrival = new Random(SEED_PERSON_ARRIVAL);
+			personWork = new Random(SEED_PERSON_WORK);
+			personFloor = new Random(SEED_PERSON_FLOOR);
+			indecisive = new Random(SEED_INDECISIVE);
+			elevatorDecision = new Random(SEED_ELEVATOR_DECISION);
+		}
 		timeStamp = 0;
 		numElevators = 1;
 		personNumber = 0;
 		elevatorNumber = 0;
 //		Method method = new FirstComeFirstServe();
-		boolean isFirstCome = true;
+		boolean [] isFirstCome = {true,false};
+		boolean [] idle = {true,false};
+		double [] lambdas = {0.5,2};
+		double [] times = {3600,7200,74000/*2.5 days @ 8 hour days*/,144000/*5 days @ 8 hour days*/};
 		
 		System.out.println(lambdaArrival);
 		
-//		Person person = new Person(this,0);
-		
-//		for(int i = 0; i < 100; i++)
-//		{
-//			System.out.println("Arrive: " + person.getAbsArrival());
-//			person = new Person(this,person.getAbsArrival());
-//		}
-		start(isFirstCome);
+		if(!oneTest)
+		{
+			for(int l = 0; l < idle.length; l++)
+			{
+				for(int i = 0; i < isFirstCome.length; i++)
+				{
+					for(int j = 0; j < times.length; j++)
+					{
+						for(int k = 0; k < lambdas.length; k++)
+						{
+							personArrival = new Random(SEED_PERSON_ARRIVAL);
+							personWork = new Random(SEED_PERSON_WORK);
+							personFloor = new Random(SEED_PERSON_FLOOR);
+							indecisive = new Random(SEED_INDECISIVE);
+							elevatorDecision = new Random(SEED_ELEVATOR_DECISION);
+							lambdaArrival = lambdas[k];
+							start(isFirstCome[i],times[j],lambdas[k], idle[l]);
+							resetElevatorNames();
+							resetPersonNames();
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			lambdaArrival = lambda;
+			start(policyTruth,time,lambda,idling);
+		}
+
 	}
 	
 	
-	public void start(boolean isFirstCome)
+	public void start(boolean isFirstCome,double times,double lambdas,boolean idle)
 	{
 		LinkedList<Elevator> elevators = new LinkedList<Elevator>();
 		LinkedList<Person> people = new LinkedList<Person>();
@@ -92,48 +147,17 @@ public class Elevators {
 			method = new LinearScan();
 		}
 		
-		System.out.println("Person " + aPerson.getName() + " created");
+		
 		for(int i = 0; i < numElevators; i++)
 		{
 			elevators.add(new Elevator(this));
 		}
 		
-		//Elevator: 
-		//Elevator waits for request
-		//Once request given, elevator moves to floor
-		//If more requests given, elevator puts in queue
-			//Elevator processes requests based on method
 		
-		//Person: 
-		//Person arrives
-		//Person presses button
-		//Person waits
-		//Once time hits person arrival, then new person generated
-		
-		while(timeStamp < 28800)
+		while(timeStamp < times)
 		{
-/*			if(timeStamp > 299)
-			{
-				debug = true;
-			}*/
 			nextElevator = nextElevator(elevators);
-/*			for(int j = 0; j < elevators.size(); j++)
-			{
-				if(elevators.get(j).getState().compareTo(ElevatorStates.IDLE) == 0)
-				{
-					nextElevator = j;
-					break;
-				}
-			}
-			
-			if(nextElevator == -1)
-			{
-				nextElevator = elevatorDecision.nextInt(elevators.size());
-				if(debug)
-				{
-					System.out.println("All elevators busy");
-				}
-			}*/
+
 			
 			if(debug)
 			{
@@ -167,56 +191,9 @@ public class Elevators {
 				
 				
 				setPeopleStates(people,elevators,nextElevator);
-/*				for(Person person : people)
-				{
-					
-					if(person.getState().compareTo(PersonStates.ARRIVING) == 0 && person.getAbsArrival() == timeStamp)
-					{
-						elevators.get(nextElevator).addFloorRequest((int)person.getCurrentFloor());
-						person.setState(PersonStates.WAITING);
-					}
-					else if(person.getState().compareTo(PersonStates.WAITING) == 0 && elevators.get(nextElevator).getCurrentFloorPosition() == person.getCurrentFloor())
-					{
-						if(person.getCurrentFloor() != 0)
-						{
-							person.setFloor(0);
-						}
-						elevators.get(nextElevator).addFloorRequest((int)person.getFloor());
-						person.setState(PersonStates.IN_ELEVATOR);
-					}
-					else if(person.getState().compareTo(PersonStates.WORKING) == 0 && person.getNextRelevantTime() == timeStamp)
-					{
-						person.setState(PersonStates.WAITING);
-						person.setFloor(0);
-						elevators.get(nextElevator).addFloorRequest((int)person.getCurrentFloor());
-					}
-					else if(person.getState().compareTo(PersonStates.WAITING) == 0)
-					{
-						elevators.get(nextElevator).addFloorRequest((int)person.getCurrentFloor());
-					}
-				}
 				
-				for(Person person : people)
-				{
-					if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0 && person.getFloor() == elevators.get(nextElevator).getCurrentFloorPosition())
-					{
-						if(elevators.get(nextElevator).getCurrentFloorPosition() == 0)
-						{
-							person.setState(PersonStates.LEFT);
-							person.setLeaveDelay(person.getLeaveDelay()+person.getElevatorWait());
-						}
-						else
-						{
-							person.setState(PersonStates.WORKING);
-							person.setFloor(0);
-							person.setNextRelevantTime(person.getAbsArrival()+person.getAddedWaitTime()+person.getElevatorWait()+person.getWorkTime());
-							person.setWorkDelay(person.getWorkDelay()+person.getElevatorWait());
-							person.setElevatorWait(0);
-						}
-					}
-				}*/
-							
 				
+				//Find the next response time
 				shortestElevatorRequestTime = shortestElevatorToFloor(elevators);
 				
 				if(shortestElevatorRequestTime == -1)
@@ -231,6 +208,17 @@ public class Elevators {
 					}
 				}
 				
+				if(elevators.get(shortestElevatorRequestTime).getCurrentFloorPosition() < 0)
+				{
+					try {
+						throw new Exception("Out of bounds");
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						System.exit(-1);
+					}
+				}
+				
 				moveTime = 0;
 				
 				if(debug)
@@ -240,35 +228,11 @@ public class Elevators {
 					input = new Scanner(System.in);
 				}
 				
+				//Find how much movement is needed
+				
 				if(elevators.get(shortestElevatorRequestTime).floorRequestSize() > 0)
 				{
-/*					int nextFloorRequest = elevators.get(shortestElevatorRequestTime).getNextFloorRequest();
-					if(debug)
-					{
-						if(elevators.get(shortestElevatorRequestTime).getCurrentFloorPosition() < 0)
-						{
-							try {
-								throw new Exception("Less than 0");
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						System.out.println("Next floor request is " + nextFloorRequest);
-						System.out.println(elevators.get(shortestElevatorRequestTime).getFloorRequest(elevators.get(shortestElevatorRequestTime).getNextFloorRequest()));
-						System.out.println(elevators.get(shortestElevatorRequestTime).getCurrentFloorPosition());
-						
-					}
-					double aDouble = method.nextFloor(elevators.get(shortestElevatorRequestTime));//Math.abs(elevators.get(shortestElevatorRequestTime).getFloorRequest(elevators.get(shortestElevatorRequestTime).getNextFloorRequest())-elevators.get(shortestElevatorRequestTime).getCurrentFloorPosition());
-					if(debug)
-					{
-						System.out.println("aDouble is " + aDouble);
-						input.nextLine();
-						input = new Scanner(System.in);
-					}
-					aDouble += timeStamp;*/
 					moveTime = findNextEvent(elevators,shortestElevatorRequestTime);
-//					moveTime = aDouble;// + elevators.get(shortestElevatorRequestTime).getCurrentFloorPosition();
 				}
 				else
 				{
@@ -279,6 +243,7 @@ public class Elevators {
 					moveTime *= -1;
 				}
 				
+				//Check the next arrival to see if they are coming in
 				
 				if(isArrivalNextEvent(people,aPerson))
 				{
@@ -332,6 +297,9 @@ public class Elevators {
 				}
 
 
+				//If skipping to the next elevator request moves
+				//Over a person doing something, then
+				//that time has to be compensated for
 				
 				if(moveTime > people.get(nextPerson).getNextRelevantTime() || moveTime > aPerson.getAbsArrival())
 				{
@@ -380,31 +348,7 @@ public class Elevators {
 					
 					if(people.size() > 1)
 					{
-						
-						
-/*						for(int j = 0; j < people.size(); j++)
-						{
-							if(timeStamp + shortestNext > people.get(j).getNextRelevantTime() && timeStamp < people.get(j).getNextRelevantTime())
-							{
-								if(debug)
-								{
-									System.out.println("ShortestNext is " + shortestNext);
-									System.out.println("TimeStamp is " + timeStamp);
-									System.out.println("Person " + people.get(j).getName() + " time is " + people.get(j).getNextRelevantTime());
-									input.nextLine();
-									input = new Scanner(System.in);
-								}
-								shortestNext = people.get(j).getNextRelevantTime() - timeStamp;
-								nextPerson = j;
-							}
-						}
-						if(people.get(nextPerson).getState().compareTo(PersonStates.ARRIVING) == 0 || people.get(nextPerson).getState().compareTo(PersonStates.WORKING) == 0)
-						{
-							people.get(nextPerson).setState(PersonStates.WAITING);
-							elevators.get(nextElevator).addFloorRequest((int)people.get(nextPerson).getCurrentFloor());
-						}*/
 						moveTime = newMoveTime(people,elevators,shortestNext,nextPerson,nextElevator);
-//						moveTime = shortestNext;
 					}
 					timeStamp += moveTime;
 					if(debug)
@@ -414,15 +358,6 @@ public class Elevators {
 					}
 
 					moveElevators(elevators, moveTime);
-					
-					
-					if(people.get(nextPerson).getCurrentFloor() == 0.0)
-					{
-						if(debug)
-						{
-							System.out.println("And they are coming to work");
-						}
-					}
 					
 					if(debug)
 					{
@@ -474,6 +409,8 @@ public class Elevators {
 				}
 				
 				
+				//Get the delay for processing
+				
 				for(Person person : people)
 				{
 					if(person.getState().compareTo(PersonStates.WAITING) == 0)
@@ -494,14 +431,7 @@ public class Elevators {
 						person.setElevatorWait(person.getElevatorWait() + moveTime);
 					}
 				}
-				
-				if(people.get(nextPerson).getCurrentFloor() == 0.0)
-				{
-					if(debug)
-					{
-						System.out.println("And they are coming to work");
-					}
-				}
+
 				
 				if(debug)
 				{
@@ -511,8 +441,10 @@ public class Elevators {
 				
 				
 			}
-			else
+			else//	if(people.size() > 0)
 			{
+				
+				//There isn't anybody inside of the building
 				timeStamp = aPerson.getAbsArrival();
 				aPerson.setState(PersonStates.WAITING);
 				elevators.get(nextElevator).addFloorRequest((int)aPerson.getCurrentFloor());
@@ -584,17 +516,43 @@ public class Elevators {
 					l++;
 				}
 			}
-			System.out.println("At timestamp " + timeStamp);
+			
+			if(idle)
+			{
+				for(Elevator elevator : elevators)
+				{
+					if(elevator.getState().compareTo(ElevatorStates.IDLE) == 0 && elevator.getCurrentFloorPosition() != 0.0)
+					{
+						elevator.addFloorRequest(0);
+					}
+				}
+			}
+			
+			
+			if(debug)
+			{
+				System.out.println("At timestamp " + timeStamp);
+			}
 		}
 		
 		
-		averages(leftPeople);
+		averages(leftPeople,isFirstCome,lambdas,times,idle);
+		timeStamp = 0.0;
 		
 		
 	}
 	
 	
-	public void averages(LinkedList<Person> people)
+	/**
+	 * 
+	 * @param people the people who left the building
+	 * @param isFirstCome checks what policy
+	 * @param lambdas how many people are moving
+	 * @param times how long the experiment went
+	 * @param idle different idling policies
+	 */
+	
+	public void averages(LinkedList<Person> people, boolean isFirstCome, double lambdas, double times, boolean idle)
 	{
 		double totalWorkDelay = 0;
 		double totalLeaveDelay = 0;
@@ -608,6 +566,24 @@ public class Elevators {
 		double meanLeaveDelay;
 		double [] workDelayTimes = new double[people.size()];
 		double [] leaveDelayTimes = new double[people.size()];
+		
+		System.out.print("Stats for lambda at " + lambdas + ", times at " + times + ", ");
+		if(isFirstCome)
+		{
+			System.out.print(" using FCFS, ");
+		}
+		else
+		{
+			System.out.print(" using linear scan, ");
+		}
+		if(idle)
+		{
+			System.out.println("and first floor policy");
+		}
+		else
+		{
+			System.out.println("and idling policy");
+		}
 		
 		
 		for(int i = 0; i < people.size(); i++)
@@ -662,6 +638,12 @@ public class Elevators {
 		
 	}
 	
+	
+	/**
+	 * Used to deal with floating point errors
+	 * @param number
+	 * @return a rounded number to the nearest thousandth
+	 */
 	private double round(double number)
 	{
 		number *= 1000;
@@ -671,6 +653,12 @@ public class Elevators {
 		return number;
 	}
 	
+	
+	/**
+	 * 
+	 * @param elevators
+	 * @return the next elevator being used
+	 */
 	private int nextElevator(LinkedList<Elevator> elevators)
 	{
 		int nextElevator = -1;
@@ -695,11 +683,22 @@ public class Elevators {
 		
 	}
 	
+	/**
+	 * 
+	 * Checks if the people are arriving, and sets them to waiting if they are
+	 * if the elevator is on the same floor they requested, and they aren't
+	 * inside the elevator, then they go inside the elevator
+	 * and vice versa
+	 * 
+	 * @param people the people in the building
+	 * @param elevators the elevators in the building
+	 * @param nextElevator the elevator the people might be in
+	 */
+	
 	private void setPeopleStates(LinkedList<Person> people, LinkedList<Elevator> elevators, int nextElevator)
 	{
 		for(Person person : people)
 		{
-			
 			if(person.getState().compareTo(PersonStates.ARRIVING) == 0 && person.getAbsArrival() == timeStamp)
 			{
 				elevators.get(nextElevator).addFloorRequest((int)person.getCurrentFloor());
@@ -747,6 +746,13 @@ public class Elevators {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param elevators the elevators inside of the building
+	 * @param shortestElevatorRequestTime the next floor the elevator can go on
+	 * @return
+	 */
+	
 	private double findNextEvent(LinkedList<Elevator> elevators, int shortestElevatorRequestTime)
 	{
 		int nextFloorRequest = elevators.get(shortestElevatorRequestTime).getNextFloorRequest();
@@ -777,6 +783,15 @@ public class Elevators {
 		aDouble += timeStamp;
 		return aDouble;
 	}
+	
+	/**
+	 * Moves the people inside of the elevators
+	 * 
+	 * @param people the people inside of the building
+	 * @param elevators the elevators inside of the building
+	 * @param nextElevator the elevator the people are in
+	 * @param moveTime the movement of time
+	 */
 	
 	public void movePeopleInElevators(LinkedList<Person> people, LinkedList<Elevator> elevators, int nextElevator, double moveTime)
 	{
@@ -810,6 +825,13 @@ public class Elevators {
 		}
 	}
 	
+	/**
+	 * Moves the elevators a certain length
+	 * 
+	 * @param elevators the elevators inside of the building
+	 * @param moveTime the movement of time
+	 */
+	
 	public void moveElevators(LinkedList<Elevator> elevators, double moveTime)
 	{
 		for(Elevator elevator : elevators)
@@ -842,6 +864,16 @@ public class Elevators {
 		}
 	}
 	
+	
+	/**
+	 * 
+	 * @param people The people inside of the building
+	 * @param elevators the elevators
+	 * @param shortestNext the next time something will change states
+	 * @param nextPerson the next person whose state will change
+	 * @param nextElevator the next elevator whose state will change
+	 * @return the new time that will move
+	 */
 	public double newMoveTime(LinkedList<Person> people, LinkedList<Elevator> elevators,double shortestNext, int nextPerson, int nextElevator)
 	{
 		for(int j = 0; j < people.size(); j++)
@@ -867,6 +899,14 @@ public class Elevators {
 		}
 		return shortestNext;
 	}
+	
+	
+	/**
+	 * 
+	 * @param elevators the elevators in the building
+	 * @return the next elevator that will complete a floor transaction next
+	 * or -1 if all elevators are idle
+	 */
 	
 	public int shortestElevatorToFloor(LinkedList<Elevator> elevators)
 	{
@@ -901,7 +941,11 @@ public class Elevators {
 		
 	}
 	
-	
+	/**
+	 * 
+	 * @param people the list of people inside of the building
+	 * @return the next time that a person will change states
+	 */
 	public int nextPersonEvent(LinkedList<Person> people)
 	{
 		int smallest = people.size()-1;
@@ -916,16 +960,33 @@ public class Elevators {
 		return smallest;
 	}
 	
+	
+	/**
+	 * 
+	 * @param people the list of people currently in the building
+	 * @param aPerson a person who may or may not be inside the building
+	 * @return true if the person is arriving, false if not
+	 */
 	public boolean isArrivalNextEvent(LinkedList<Person> people, Person aPerson)
 	{
 		for(Person person : people)
 		{
-			if(person.getNextRelevantTime() < aPerson.getNextRelevantTime() || person.getState().compareTo(PersonStates.ARRIVING) == 0)
+			if(person.getState().compareTo(PersonStates.LEFT) != 0 && (person.getNextRelevantTime() < aPerson.getNextRelevantTime() || person.getState().compareTo(PersonStates.ARRIVING) == 0))
 			{
 				return false;
 			}
 		}
 		return true;
+	}
+	
+	private void resetElevatorNames()
+	{
+		this.elevatorNumber = 0;
+	}
+	
+	private void resetPersonNames()
+	{
+		this.personNumber = 0;
 	}
 	
 	public int getElevatorName()

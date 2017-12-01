@@ -8,17 +8,9 @@ import simulation.Elevators;
 public class FirstComeFirstServe extends Method
 {
 
-	public FirstComeFirstServe() {
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public void add(int floorRequest) 
-	{
-		floorRequests.add(floorRequest);
-	
-	}
-
+	/**
+	 * Just get the movement of the next floor requested
+	 */
 	@Override
 	public double nextFloor(Elevator elevator)
 	{
@@ -30,15 +22,5 @@ public class FirstComeFirstServe extends Method
 		return Math.abs(elevator.getCurrentFloorPosition()-elevator.getFloorRequest(0));
 	}
 
-	@Override
-	public double floorTimeJump(double elevatorFloor, double personFloor) 
-	{
-		double floorChange = Math.abs(elevatorFloor-personFloor);
-		
-		floorChange *= 10;
-		floorChange /= 60;
-		
-		return floorChange;
-	}
 
 }

@@ -8,10 +8,6 @@ public abstract class Method
 {
 	protected LinkedList<Integer> floorRequests = new LinkedList<Integer>();
 	
-	public abstract void add(int floorRequest);
-	
 	public abstract double nextFloor(Elevator elevator);
-	
-	public abstract double floorTimeJump(double elevatorFloor, double personFloor);
-	
+		
 }
