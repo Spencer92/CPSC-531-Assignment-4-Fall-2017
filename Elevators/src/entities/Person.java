@@ -26,7 +26,7 @@ public class Person
 		this.elevator = elevator;
 		this.floor = elevator.getFloor()*10;
 		this.workTime = elevator.getWork();
-		this.arrival = elevator.getArrival() + prevArrivalTime;
+		this.arrival = round(elevator.getArrival() + prevArrivalTime);
 		this.nextRelevantTime = arrival;
 		this.name = elevator.getPersonName();
 		this.currentFloor = 0;
@@ -50,7 +50,7 @@ public class Person
 	
 	public void setElevatorWait(double elevatorWait)
 	{
-		this.elevatorWait = elevatorWait;
+		this.elevatorWait = round(elevatorWait);
 	}
 	
 	public PersonStates getState()
@@ -75,7 +75,7 @@ public class Person
 	
 	public void setCurrentFloor(double currentFloor)
 	{
-		this.currentFloor = currentFloor;
+		this.currentFloor = round(currentFloor);
 	}
 	
 	public double getAddedWaitTime()
@@ -85,7 +85,7 @@ public class Person
 	
 	public void setAddedWaitTime(double addedWaitTime)
 	{
-		this.addedWaitTime = addedWaitTime;
+		this.addedWaitTime = round(addedWaitTime);
 	}
 	
 	public double getArrival()
@@ -120,7 +120,7 @@ public class Person
 	
 	public void setNextRelevantTime(double nextRelevantTime)
 	{
-		this.nextRelevantTime = nextRelevantTime;
+		this.nextRelevantTime = round(nextRelevantTime);
 	}
 	
 	public double getLeaveDelay()
@@ -130,7 +130,7 @@ public class Person
 	
 	public void setLeaveDelay(double delay)
 	{
-		this.leaveDelay = delay;
+		this.leaveDelay = round(delay);
 	}
 	
 	public double getWorkDelay()
@@ -140,12 +140,21 @@ public class Person
 	
 	public void setWorkDelay(double workDelay)
 	{
-		this.workDelay = workDelay;
+		this.workDelay = round(workDelay);
 	}
 	
 	public void setArrival(double arrival)
 	{
-		this.arrival = arrival;
+		this.arrival = round(arrival);
+	}
+	
+	private double round(double number)
+	{
+		number *= 1000;
+		number = Math.round(number);
+		number = Math.floor(number);
+		number /= 1000;
+		return number;
 	}
 	
 	/*

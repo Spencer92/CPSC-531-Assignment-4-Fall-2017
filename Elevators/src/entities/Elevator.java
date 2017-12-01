@@ -89,7 +89,7 @@ public class Elevator
 
 
 	public void setCurrentFloorPosition(double currentFloorPosition) {
-		this.currentFloorPosition = currentFloorPosition;
+		this.currentFloorPosition = round(currentFloorPosition);
 	}
 
 
@@ -147,6 +147,15 @@ public class Elevator
 			}
 		}
 		return distance;
+	}
+	
+	private double round(double number)
+	{
+		number *= 1000;
+		number = Math.round(number);
+		number = Math.floor(number);
+		number /= 1000;
+		return number;
 	}
 	
 	/*

@@ -30,7 +30,7 @@ public class Elevators {
 	private Random personFloor;
 	private Random indecisive;
 	private int floors = 7;
-	private double lambdaArrival = 0.5;// rate change from sec to minutes
+	private double lambdaArrival = 2.0;// rate change from sec to minutes
 	private double meanWorkRate = 3600;//3600;
 	private double floorChangeRate = 10;
 	private double timeStamp;
@@ -56,7 +56,7 @@ public class Elevators {
 		personNumber = 0;
 		elevatorNumber = 0;
 //		Method method = new FirstComeFirstServe();
-		boolean isFirstCome = false;
+		boolean isFirstCome = true;
 		
 		System.out.println(lambdaArrival);
 		
@@ -112,6 +112,10 @@ public class Elevators {
 		
 		while(timeStamp < 28800)
 		{
+/*			if(timeStamp > 299)
+			{
+				debug = true;
+			}*/
 			nextElevator = nextElevator(elevators);
 /*			for(int j = 0; j < elevators.size(); j++)
 			{
@@ -410,35 +414,6 @@ public class Elevators {
 					}
 
 					moveElevators(elevators, moveTime);
-
-/*					for(Elevator elevator : elevators)
-					{
-						if(elevator.getState().compareTo(ElevatorStates.MOVING_UP) == 0)
-						{
-							elevator.setCurrentFloorPosition(elevator.getCurrentFloorPosition()+moveTime);
-						}
-						else if(elevator.getState().compareTo(ElevatorStates.MOVING_DOWN) == 0)
-						{
-
-							elevator.setCurrentFloorPosition(elevator.getCurrentFloorPosition()-moveTime);
-						}
-						else if(elevator.getState().compareTo(ElevatorStates.IDLE) == 0)
-						{
-							if(elevator.floorRequestSize() > 0)
-							{
-								if(elevator.getFloorRequest(elevator.getNextFloor()) > elevator.getCurrentFloorPosition())
-								{
-									elevator.setCurrentFloorPosition(elevator.getCurrentFloorPosition()+moveTime);
-									elevator.setState(ElevatorStates.MOVING_UP);
-								}
-								else
-								{
-									elevator.setCurrentFloorPosition(elevator.getCurrentFloorPosition()-moveTime);
-									elevator.setState(ElevatorStates.MOVING_DOWN);
-								}
-							}
-						}
-					}*/
 					
 					
 					if(people.get(nextPerson).getCurrentFloor() == 0.0)
@@ -492,34 +467,6 @@ public class Elevators {
 				
 				movePeopleInElevators(people,elevators,nextElevator,moveTime);
 				
-/*				for(Person person : people)
-				{
-					if(person.getState().compareTo(PersonStates.IN_ELEVATOR) == 0)
-					{
-						if(elevators.get(nextElevator).getState().compareTo(ElevatorStates.MOVING_UP) == 0)
-						{
-							person.setCurrentFloor(person.getCurrentFloor()+moveTime);
-							if(debug)
-							{
-								System.out.println("Moved person " + person.getName() + " up " + moveTime);
-							}
-						}
-						else if(elevators.get(nextElevator).getState().compareTo(ElevatorStates.MOVING_DOWN) == 0)
-						{
-							person.setCurrentFloor(person.getCurrentFloor()-moveTime);
-							if(debug)
-							{
-								System.out.println("Moved person " + person.getName() + " down " + moveTime);
-							}
-						}
-						if(debug)
-						{
-							input.nextLine();
-							input = new Scanner(System.in);
-						}
-						
-					}
-				}*/
 				
 				if(debug)
 				{
@@ -637,6 +584,7 @@ public class Elevators {
 					l++;
 				}
 			}
+			System.out.println("At timestamp " + timeStamp);
 		}
 		
 		
@@ -697,6 +645,12 @@ public class Elevators {
 		standardDeviationLeaveDelay = adjustedLeaveDelayTotal/adjustedTimesLeaveDelay.length;
 		standardDeviationLeaveDelay = Math.sqrt(standardDeviationLeaveDelay);
 		
+		standardDeviationLeaveDelay = round(standardDeviationLeaveDelay);
+		standardDeviationWorkDelay = round(standardDeviationWorkDelay);
+		
+		meanWorkDelay = round(meanWorkDelay);
+		meanLeaveDelay = round(meanLeaveDelay);
+		
 		System.out.println("mean delay for work: " + meanWorkDelay);
 		System.out.println("Standard deviation for work: " + standardDeviationWorkDelay  + "\n");
 
@@ -706,6 +660,15 @@ public class Elevators {
 		
 		
 		
+	}
+	
+	private double round(double number)
+	{
+		number *= 1000;
+		number = Math.round(number);
+		number = Math.floor(number);
+		number /= 1000;
+		return number;
 	}
 	
 	private int nextElevator(LinkedList<Elevator> elevators)
