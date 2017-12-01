@@ -10,7 +10,7 @@ public abstract class Method
 	
 	public abstract void add(int floorRequest);
 	
-	public abstract int nextFloor(Elevator elevator);
+	public abstract double nextFloor(Elevator elevator);
 	
 	public abstract double floorTimeJump(double elevatorFloor, double personFloor);
 	

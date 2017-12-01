@@ -11,12 +11,26 @@ public class Elevator
 	private int floorOn;
 	private double currentFloorPosition;
 	private ElevatorStates state;
+	private ElevatorStates prevElevatorState;
 	private int name;
 	private Elevators elevator;
 	LinkedList<Integer> floorRequests = new LinkedList<Integer>();
 	private int nextFloorRequest;
+	private int nextFloor;
 	
 	
+	public int getNextFloor() {
+		return nextFloor;
+	}
+
+	public void setNextFloor(int nextFloor) {
+		this.nextFloor = nextFloor;
+	}
+
+	public ElevatorStates getPrevElevatorState() {
+		return prevElevatorState;
+	}
+
 	public int getNextFloorRequest() {
 		return nextFloorRequest;
 	}
@@ -31,6 +45,7 @@ public class Elevator
 		this.currentFloorPosition = 0;
 		this.name = elevator.getElevatorName();
 		this.state = ElevatorStates.IDLE;
+		this.prevElevatorState = ElevatorStates.IDLE;
 	}
 
 	public void addFloorRequest(int floorRequest)
@@ -84,7 +99,11 @@ public class Elevator
 
 
 	public void setState(ElevatorStates state) {
-		this.state = state;
+		if(this.state != state)
+		{
+			this.prevElevatorState = this.state;
+			this.state = state;
+		}
 	}
 
 
@@ -105,12 +124,12 @@ public class Elevator
 	public double distanceFromFloor()
 	{
 		double distance = 0;
-		if(this.state.compareTo(ElevatorStates.MOVING_UP) == 0 || this.state.compareTo(ElevatorStates.STOP_UP) == 0)
+		if(this.state.compareTo(ElevatorStates.MOVING_UP) == 0 || this.prevElevatorState.compareTo(ElevatorStates.MOVING_UP) == 0)
 		{
 			distance = (double) ((int) this.currentFloorPosition+1);
 			distance -= this.currentFloorPosition;
 		}
-		else if(this.state.compareTo(ElevatorStates.MOVING_DOWN) == 0 || this.state.compareTo(ElevatorStates.STOP_DOWN) == 0)
+		else if(this.state.compareTo(ElevatorStates.MOVING_DOWN) == 0 || this.prevElevatorState.compareTo(ElevatorStates.MOVING_DOWN) == 0)
 		{
 			distance = (double) ((int) this.currentFloorPosition-1);
 			distance = this.currentFloorPosition - distance;

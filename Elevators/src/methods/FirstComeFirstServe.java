@@ -3,6 +3,7 @@ package methods;
 import java.util.LinkedList;
 
 import entities.Elevator;
+import simulation.Elevators;
 
 public class FirstComeFirstServe extends Method
 {
@@ -19,9 +20,14 @@ public class FirstComeFirstServe extends Method
 	}
 
 	@Override
-	public int nextFloor(Elevator elevator) 
+	public double nextFloor(Elevator elevator)
 	{
-		return 0;
+		if(Elevators.debug)
+		{
+			System.out.println("Entered nextFloor");
+		}
+		
+		return Math.abs(elevator.getCurrentFloorPosition()-elevator.getFloorRequest(0));
 	}
 
 	@Override
